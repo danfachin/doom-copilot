@@ -1,0 +1,639 @@
+[
+  {
+    "class_name": "PB_RailDamage",
+    "parent_class": "PB_Projectile",
+    "base_damage": 757,
+    "damage_type": null,
+    "caliber": null,
+    "ripper_count": 1,
+    "penetration_count": 0,
+    "is_pellet": false,
+    "speed": null,
+    "special": [],
+    "source_file": "zscript/Weapons/Projectiles/RailGunPj.zs"
+  },
+  {
+    "class_name": "PB_JavelinProjectile_Hot",
+    "parent_class": "PB_ProjectileAlt",
+    "base_damage": 420,
+    "damage_type": "Blast",
+    "caliber": "javelin",
+    "ripper_count": 7,
+    "penetration_count": 1,
+    "is_pellet": false,
+    "speed": 100,
+    "special": [
+      "bouncing",
+      "penetration",
+      "ripper"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.SpecialProjectiles.zsc"
+  },
+  {
+    "class_name": "PB_JavelinProjectile",
+    "parent_class": "PB_ProjectileAlt",
+    "base_damage": 360,
+    "damage_type": "Blast",
+    "caliber": "javelin",
+    "ripper_count": 4,
+    "penetration_count": 1,
+    "is_pellet": false,
+    "speed": 75,
+    "special": [
+      "bouncing",
+      "penetration",
+      "ripper"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.SpecialProjectiles.zsc"
+  },
+  {
+    "class_name": "PB_762x51mmAP",
+    "parent_class": "PB_Projectile",
+    "base_damage": 165,
+    "damage_type": null,
+    "caliber": "7.62x51mm",
+    "ripper_count": 8,
+    "penetration_count": 3,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "penetration",
+      "ripper",
+      "whiz_crack"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.HighCal.zsc"
+  },
+  {
+    "class_name": "PB_12GASlug",
+    "parent_class": "PB_Projectile",
+    "base_damage": 125,
+    "damage_type": "Shotgun",
+    "caliber": "12ga",
+    "ripper_count": 3,
+    "penetration_count": 3,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "penetration",
+      "ripper",
+      "whiz_crack"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.Shell.zsc"
+  },
+  {
+    "class_name": "PB_50AE",
+    "parent_class": "PB_Projectile",
+    "base_damage": 105,
+    "damage_type": null,
+    "caliber": ".50 AE",
+    "ripper_count": 4,
+    "penetration_count": 3,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "penetration",
+      "ripper",
+      "whiz_crack"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.SmallCal.zsc"
+  },
+  {
+    "class_name": "PB_500SW",
+    "parent_class": "PB_Projectile",
+    "base_damage": 100,
+    "damage_type": null,
+    "caliber": ".500 S&W",
+    "ripper_count": 3,
+    "penetration_count": 3,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "penetration",
+      "ripper",
+      "whiz_crack"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.SmallCal.zsc"
+  },
+  {
+    "class_name": "PB_8GAPellet_LP",
+    "parent_class": "PB_8GAPellet",
+    "base_damage": 50,
+    "damage_type": "SSG",
+    "caliber": "8ga",
+    "ripper_count": 2,
+    "penetration_count": 2,
+    "is_pellet": true,
+    "speed": null,
+    "special": [
+      "no_criticals",
+      "penetration",
+      "ripper"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.Shell.zsc"
+  },
+  {
+    "class_name": "PB_792x57mm",
+    "parent_class": "PB_Projectile",
+    "base_damage": 40,
+    "damage_type": null,
+    "caliber": "7.92x57mm",
+    "ripper_count": 5,
+    "penetration_count": 3,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "penetration",
+      "ripper",
+      "small_caliber",
+      "whiz_crack"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.HighCal.zsc"
+  },
+  {
+    "class_name": "PB_10GAPellet_LP",
+    "parent_class": "PB_10GAPellet",
+    "base_damage": 35,
+    "damage_type": "SSG",
+    "caliber": "10ga",
+    "ripper_count": 2,
+    "penetration_count": 2,
+    "is_pellet": true,
+    "speed": null,
+    "special": [
+      "no_criticals",
+      "penetration",
+      "ripper"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.Shell.zsc"
+  },
+  {
+    "class_name": "PB_762x51mm",
+    "parent_class": "PB_Projectile",
+    "base_damage": 35,
+    "damage_type": null,
+    "caliber": "7.62x51mm",
+    "ripper_count": 4,
+    "penetration_count": 3,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "penetration",
+      "ripper",
+      "whiz_crack"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.HighCal.zsc"
+  },
+  {
+    "class_name": "PB_MicroMissileProjectile",
+    "parent_class": "PB_ProjectileAlt",
+    "base_damage": 35,
+    "damage_type": "Explosive",
+    "caliber": "micro_missile",
+    "ripper_count": 0,
+    "penetration_count": 0,
+    "is_pellet": false,
+    "speed": 45,
+    "special": [
+      "explosive"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.SpecialProjectiles.zsc"
+  },
+  {
+    "class_name": "PB_556x45mmAP",
+    "parent_class": "PB_Projectile",
+    "base_damage": 25,
+    "damage_type": "Cutless",
+    "caliber": "5.56x45mm",
+    "ripper_count": 5,
+    "penetration_count": 3,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "penetration",
+      "ripper",
+      "small_caliber",
+      "whiz_crack"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.HighCal.zsc"
+  },
+  {
+    "class_name": "PB_MGNailHot",
+    "parent_class": "PB_MGNail",
+    "base_damage": 25,
+    "damage_type": "Nail",
+    "caliber": "nail",
+    "ripper_count": 6,
+    "penetration_count": null,
+    "is_pellet": false,
+    "speed": 120,
+    "special": [
+      "bouncing",
+      "ripper"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.SpecialProjectiles.zsc"
+  },
+  {
+    "class_name": "PB_556x45mm",
+    "parent_class": "PB_Projectile",
+    "base_damage": 22,
+    "damage_type": null,
+    "caliber": "5.56x45mm",
+    "ripper_count": 3,
+    "penetration_count": 3,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "penetration",
+      "ripper",
+      "whiz_crack"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.HighCal.zsc"
+  },
+  {
+    "class_name": "PB_45ACP",
+    "parent_class": "PB_Projectile",
+    "base_damage": 20,
+    "damage_type": null,
+    "caliber": ".45 ACP",
+    "ripper_count": 3,
+    "penetration_count": 2,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "penetration",
+      "ripper",
+      "small_caliber"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.SmallCal.zsc"
+  },
+  {
+    "class_name": "PB_MGNail",
+    "parent_class": "PB_ProjectileAlt",
+    "base_damage": 20,
+    "damage_type": "Nail",
+    "caliber": "nail",
+    "ripper_count": 5,
+    "penetration_count": 1,
+    "is_pellet": false,
+    "speed": 100,
+    "special": [
+      "bouncing",
+      "penetration",
+      "ripper",
+      "small_caliber"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.SpecialProjectiles.zsc"
+  },
+  {
+    "class_name": "PB_9x19mmSubsonic",
+    "parent_class": "PB_Projectile",
+    "base_damage": 19,
+    "damage_type": null,
+    "caliber": "9x19mm",
+    "ripper_count": 1,
+    "penetration_count": 1,
+    "is_pellet": false,
+    "speed": 290,
+    "special": [
+      "penetration",
+      "small_caliber"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.SmallCal.zsc"
+  },
+  {
+    "class_name": "PB_10GAPellet",
+    "parent_class": "PB_Projectile",
+    "base_damage": 18,
+    "damage_type": "Shotgun",
+    "caliber": "10ga",
+    "ripper_count": 3,
+    "penetration_count": 2,
+    "is_pellet": true,
+    "speed": null,
+    "special": [
+      "omnidirectional",
+      "penetration",
+      "ripper",
+      "small_caliber"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.Shell.zsc"
+  },
+  {
+    "class_name": "PB_8GAPellet",
+    "parent_class": "PB_Projectile",
+    "base_damage": 17,
+    "damage_type": "Shotgun",
+    "caliber": "8ga",
+    "ripper_count": 4,
+    "penetration_count": 2,
+    "is_pellet": true,
+    "speed": null,
+    "special": [
+      "omnidirectional",
+      "penetration",
+      "ripper",
+      "small_caliber"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.Shell.zsc"
+  },
+  {
+    "class_name": "PB_9x19mm",
+    "parent_class": "PB_Projectile",
+    "base_damage": 17,
+    "damage_type": null,
+    "caliber": "9x19mm",
+    "ripper_count": 2,
+    "penetration_count": 2,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "penetration",
+      "ripper",
+      "small_caliber"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.SmallCal.zsc"
+  },
+  {
+    "class_name": "PB_ShotSlug12",
+    "parent_class": "PB_Projectile",
+    "base_damage": 16,
+    "damage_type": null,
+    "caliber": "slug",
+    "ripper_count": 3,
+    "penetration_count": null,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "ripper",
+      "whiz_crack"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.EnemyProjectiles.zsc"
+  },
+  {
+    "class_name": "PB_12GAPellet",
+    "parent_class": "PB_Projectile",
+    "base_damage": 15,
+    "damage_type": "Shotgun",
+    "caliber": "12ga",
+    "ripper_count": 2,
+    "penetration_count": 2,
+    "is_pellet": true,
+    "speed": null,
+    "special": [
+      "omnidirectional",
+      "penetration",
+      "ripper",
+      "small_caliber"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.Shell.zsc"
+  },
+  {
+    "class_name": "PB_45ACPHP",
+    "parent_class": "PB_Projectile",
+    "base_damage": 15,
+    "damage_type": null,
+    "caliber": ".45 ACP",
+    "ripper_count": 2,
+    "penetration_count": 2,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "penetration",
+      "ripper",
+      "small_caliber",
+      "whiz_crack"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.SmallCal.zsc"
+  },
+  {
+    "class_name": "PB_M16",
+    "parent_class": "PB_Projectile",
+    "base_damage": 15,
+    "damage_type": null,
+    "caliber": null,
+    "ripper_count": 2,
+    "penetration_count": null,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "ripper"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletProjectile.zsc"
+  },
+  {
+    "class_name": "PB_DragonsBreathTracer",
+    "parent_class": "PB_Projectile",
+    "base_damage": 14,
+    "damage_type": "Shotgun",
+    "caliber": null,
+    "ripper_count": 0,
+    "penetration_count": null,
+    "is_pellet": false,
+    "speed": 80,
+    "special": [
+      "explosive"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/DragonsBreath.zs"
+  },
+  {
+    "class_name": "PB_MagnumBullet",
+    "parent_class": "PB_EnemyProjectileDef",
+    "base_damage": 12,
+    "damage_type": null,
+    "caliber": "magnum",
+    "ripper_count": 3,
+    "penetration_count": null,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "ripper",
+      "whiz_crack"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.EnemyProjectiles.zsc"
+  },
+  {
+    "class_name": "PB_MasterMindTracer",
+    "parent_class": "PB_EnemyProjectileDef",
+    "base_damage": 11,
+    "damage_type": "ExplosiveImpact",
+    "caliber": "minigun_he",
+    "ripper_count": 1,
+    "penetration_count": null,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "explosive",
+      "whiz_crack"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.EnemyProjectiles.zsc"
+  },
+  {
+    "class_name": "PB_MonsterTracer",
+    "parent_class": "PB_EnemyProjectileDef",
+    "base_damage": 5,
+    "damage_type": "Bullet",
+    "caliber": "tracer",
+    "ripper_count": 1,
+    "penetration_count": null,
+    "is_pellet": false,
+    "speed": null,
+    "special": [],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.EnemyProjectiles.zsc"
+  },
+  {
+    "class_name": "PB_Projectile",
+    "parent_class": "FastProjectile",
+    "base_damage": 5,
+    "damage_type": null,
+    "caliber": null,
+    "ripper_count": 1,
+    "penetration_count": 3,
+    "is_pellet": false,
+    "speed": 320,
+    "special": [
+      "bouncing",
+      "no_criticals",
+      "omnidirectional",
+      "penetration",
+      "ripper",
+      "small_caliber",
+      "whiz_crack"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletProjectile.zsc"
+  },
+  {
+    "class_name": "PB_RifleBullet",
+    "parent_class": "PB_EnemyProjectileDef",
+    "base_damage": 5,
+    "damage_type": null,
+    "caliber": "rifle",
+    "ripper_count": 1,
+    "penetration_count": null,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "whiz_crack"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.EnemyProjectiles.zsc"
+  },
+  {
+    "class_name": "PB_MonsterMinigunTracer",
+    "parent_class": "PB_EnemyProjectileDef",
+    "base_damage": 4,
+    "damage_type": "Cutless",
+    "caliber": "minigun",
+    "ripper_count": 1,
+    "penetration_count": null,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "small_caliber",
+      "whiz_crack"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.EnemyProjectiles.zsc"
+  },
+  {
+    "class_name": "PB_ShotPellet8",
+    "parent_class": "PB_EnemyProjectileDef",
+    "base_damage": 4,
+    "damage_type": null,
+    "caliber": "shotgun",
+    "ripper_count": 1,
+    "penetration_count": null,
+    "is_pellet": true,
+    "speed": null,
+    "special": [
+      "small_caliber"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.EnemyProjectiles.zsc"
+  },
+  {
+    "class_name": "PB_PistolBullet",
+    "parent_class": "PB_EnemyProjectileDef",
+    "base_damage": 3,
+    "damage_type": null,
+    "caliber": "pistol",
+    "ripper_count": 2,
+    "penetration_count": null,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "ripper",
+      "small_caliber"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.EnemyProjectiles.zsc"
+  },
+  {
+    "class_name": "PB_ShotPellet10",
+    "parent_class": "PB_EnemyProjectileDef",
+    "base_damage": 3,
+    "damage_type": null,
+    "caliber": "shotgun",
+    "ripper_count": 1,
+    "penetration_count": null,
+    "is_pellet": true,
+    "speed": null,
+    "special": [
+      "small_caliber"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.EnemyProjectiles.zsc"
+  },
+  {
+    "class_name": "PB_NaziBullet",
+    "parent_class": "PB_EnemyProjectileDef",
+    "base_damage": 2,
+    "damage_type": null,
+    "caliber": "rifle",
+    "ripper_count": 1,
+    "penetration_count": null,
+    "is_pellet": false,
+    "speed": null,
+    "special": [
+      "small_caliber"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.EnemyProjectiles.zsc"
+  },
+  {
+    "class_name": "PB_ShotPellet12",
+    "parent_class": "PB_EnemyProjectileDef",
+    "base_damage": 2,
+    "damage_type": null,
+    "caliber": "shotgun",
+    "ripper_count": 1,
+    "penetration_count": null,
+    "is_pellet": true,
+    "speed": null,
+    "special": [
+      "small_caliber"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.EnemyProjectiles.zsc"
+  },
+  {
+    "class_name": "PB_ShotPelletQuad",
+    "parent_class": "PB_EnemyProjectileDef",
+    "base_damage": 2,
+    "damage_type": null,
+    "caliber": "shotgun",
+    "ripper_count": 1,
+    "penetration_count": null,
+    "is_pellet": true,
+    "speed": null,
+    "special": [
+      "small_caliber"
+    ],
+    "source_file": "zscript/Weapons/Projectiles/BulletDef.EnemyProjectiles.zsc"
+  },
+  {
+    "class_name": "PB_Shrapnel",
+    "parent_class": "PB_Projectile",
+    "base_damage": 2,
+    "damage_type": "Shrapnel",
+    "caliber": null,
+    "ripper_count": 0,
+    "penetration_count": null,
+    "is_pellet": false,
+    "speed": 75,
+    "special": [],
+    "source_file": "zscript/Weapons/Projectiles/Shrapnel.zsc"
+  }
+]

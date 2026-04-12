@@ -1,0 +1,5 @@
+// Register HearthLogger event handler alongside any existing handlers (e.g., Project Brutality)
+gameinfo
+{
+    AddEventHandlers = "HearthLogger"
+}
