@@ -65,8 +65,30 @@ JUNK_SUBSTRINGS = [
     "FacingFront", "HelmetGib", "HeadGib", "Chaingun_Pickup",
     "SwitchMode", "BossTarget", "EmptyTarget", "LostLeg", "LostHead",
     "ChainsawMarine", "CurbstompedMarine", "MonsterTargetCheck",
-    "AlertAfterDeath", "DeathAnim",
+    "AlertAfterDeath", "DeathAnim", "AbsolutelyDestroyed",
+    "Fatalized", "Headless", "MessyCorpse", "Torso", "Hanging",
+    "Pinned", "Impfaceismucked", "PunchedHard", "ImpTorso",
+    "FuelTank", "NewFuelTank",
+    "NailgunMajorMessy", "NaziPunched",
 ]
+
+# Parent classes that are known real monsters (children inherit speed/health)
+KNOWN_MONSTER_PARENTS = {
+    "pb_monster", "pb_rev", "pb_vile", "pb_zombieman", "pb_sergeant",
+    "pb_imp", "pb_imp1", "pb_demon", "pb_cacodemon", "pb_baron",
+    "pb_baron1", "pb_knight", "pb_archvile", "pb_revenant",
+    "pb_mancubus", "pb_mancubus1", "pb_arachnotron", "pb_arachnotron1",
+    "pb_cyberdemon", "pb_cyberdemon1", "pb_lostsoul",
+    "pb_painelemental", "pb_chaingunguy", "pb_commando",
+    "pb_minigunaguy", "pb_shotgunguy", "pb_zspecops",
+    "pb_nailgunmajor", "fatso", "cyberdemon", "spidermastermind",
+    "arachnotron", "revenant", "archvile", "pb_nazi",
+    "pb_classicccommando", "pb_helmetcommando",
+    "pb_darkimpnami", "pb_darkimpnether", "pb_darkimpst", "pb_darkimpvoid",
+    "pb_demonteechzombie", "pb_rifleezombieman", "pb_suicidebomber",
+    "pb_meandememon", "pb_mechdemeon", "pb_voidspectre",
+    "pb_afrit", "pb_watcher", "pb_phantasm",
+}
 
 # Flags we care about extracting
 INTERESTING_FLAGS = {
@@ -83,6 +105,18 @@ def is_junk_class(class_name: str) -> bool:
         if sub.lower() in class_name.lower():
             return True
     return False
+
+
+# Default health values for vanilla Doom enemies (inherited by PB3 actors)
+VANILLA_HEALTH = {
+    "zombieman": 20, "shotgunguy": 30, "chaingunguy": 70,
+    "doomimp": 60, "demon": 150, "spectre": 150,
+    "lostsoul": 100, "cacodemon": 400, "painelemental": 400,
+    "revenant": 300, "arachnotron": 500, "fatso": 600,
+    "archvile": 700, "hellknight": 500, "baronofhell": 1000,
+    "cyberdemon": 4000, "spidermastermind": 3000,
+    "wolfensteinss": 50,
+}
 
 
 def read_file_text(path: Path) -> str:
@@ -103,17 +137,20 @@ def find_decorate_actors(text: str) -> List[Tuple[str, str, str]]:
     Returns list of (class_name, parent_class, actor_body).
     """
     results = []
-    # Match: ACTOR ClassName : ParentClass { ... }
-    # or:    ACTOR ClassName { ... }
-    pattern = re.compile(
-        r'ACTOR\s+(\w+)\s*(?::\s*(\w+))?\s*(?://[^\n]*)?\s*\{',
+    # Find ACTOR declarations, then scan forward for the opening brace.
+    decl_pattern = re.compile(
+        r'ACTOR\s+(\w+)\s*(?::\s*(\w+))?',
         re.IGNORECASE
     )
-    for m in pattern.finditer(text):
+    for m in decl_pattern.finditer(text):
         class_name = m.group(1)
         parent_class = m.group(2) or ""
-        # Find the matching closing brace
-        body_start = m.end()
+        # Scan forward from end of match to find the first '{' within 500 chars
+        search_end = min(m.end() + 500, len(text))
+        brace_pos = text.find('{', m.end(), search_end)
+        if brace_pos == -1:
+            continue
+        body_start = brace_pos + 1
         body = extract_braced_body(text, body_start)
         if body is not None:
             results.append((class_name, parent_class, body))
@@ -148,27 +185,48 @@ def parse_decorate_monster(
     body_lower = body.lower()
     full_text = body
 
-    # Must look like a monster
+    # Must look like a monster -- check parent class or Monster keyword
     is_monster = False
     monster_parents = {
         "pb_monster", "pb_rev", "pb_vile", "fatso", "cyberdemon",
         "spidermastermind", "arachnotron", "revenant", "archvile",
+        # Intermediate parent classes (subclasses of PB_Monster)
+        "pb_zombieman", "pb_commando", "pb_sergeant", "pb_imp",
+        "pb_imp1", "pb_demon", "pb_baron", "pb_baron1", "pb_knight",
+        "pb_cacodemon", "pb_mancubus", "pb_mancubus1",
+        "pb_arachnotron", "pb_arachnotron1", "pb_revenant",
+        "pb_archvile", "pb_cyberdemon", "pb_cyberdemon1",
+        "pb_lostsoul", "pb_painelemental", "pb_chaingunguy",
+        "pb_minigunaguy", "pb_shotgunguy", "pb_zspecops",
+        "pb_afrit", "pb_watcher", "pb_phantasm",
     }
     if parent_class.lower() in monster_parents:
         is_monster = True
     if re.search(r'\bmonster\b', body_lower):
         is_monster = True
-    if re.search(r'^\s*health\s+\d', body_lower, re.MULTILINE):
-        is_monster = True
 
     if not is_monster:
         return None
 
-    # Extract health
-    health_match = re.search(r'^\s*health\s+(\d+)', body_lower, re.MULTILINE)
-    if not health_match:
+    # Must have a See state or A_Chase/A_Look -- this filters out gib parts,
+    # death animations, and other static actors that happen to have Health
+    has_behavior = (
+        re.search(r'^\s*See:', body, re.MULTILINE | re.IGNORECASE)
+        or re.search(r'A_Chase', body)
+        or re.search(r'A_Look', body)
+        or re.search(r'A_SmartChase', body)
+    )
+    if not has_behavior:
         return None
-    health = int(health_match.group(1))
+
+    # Extract health (with fallback to vanilla defaults for inherited actors)
+    health_match = re.search(r'^\s*health\s+(\d+)', body_lower, re.MULTILINE)
+    if health_match:
+        health = int(health_match.group(1))
+    else:
+        health = VANILLA_HEALTH.get(parent_class.lower())
+    if health is None:
+        return None
 
     # Skip tiny-health actors (gib parts, effects)
     if health < 20:
@@ -273,14 +331,20 @@ def find_zscript_classes(text: str) -> List[Tuple[str, str, str]]:
     Returns list of (class_name, parent_class, class_body).
     """
     results = []
-    pattern = re.compile(
-        r'class\s+(\w+)\s*:\s*(\w+)(?:\s+\w+)*\s*\{',
+    # Find class declarations, then scan forward for opening brace
+    decl_pattern = re.compile(
+        r'\bclass\s+(\w+)\s*:\s*(\w+)',
         re.IGNORECASE
     )
-    for m in pattern.finditer(text):
+    for m in decl_pattern.finditer(text):
         class_name = m.group(1)
         parent_class = m.group(2)
-        body_start = m.end()
+        # Scan forward for first '{' within 500 chars
+        search_end = min(m.end() + 500, len(text))
+        brace_pos = text.find('{', m.end(), search_end)
+        if brace_pos == -1:
+            continue
+        body_start = brace_pos + 1
         body = extract_braced_body(text, body_start)
         if body is not None:
             results.append((class_name, parent_class, body))
@@ -306,12 +370,30 @@ def parse_zscript_monster(
     monster_parents = {
         "pb_monster", "pb_rev", "pb_vile", "fatso", "cyberdemon",
         "spidermastermind", "arachnotron", "revenant", "archvile",
+        "pb_zombieman", "pb_commando", "pb_sergeant", "pb_imp",
+        "pb_imp1", "pb_demon", "pb_baron", "pb_baron1", "pb_knight",
+        "pb_cacodemon", "pb_mancubus", "pb_mancubus1",
+        "pb_arachnotron", "pb_arachnotron1", "pb_revenant",
+        "pb_archvile", "pb_cyberdemon", "pb_cyberdemon1",
+        "pb_lostsoul", "pb_painelemental", "pb_chaingunguy",
+        "pb_minigunaguy", "pb_shotgunguy", "pb_zspecops",
+        "pb_afrit", "pb_watcher", "pb_phantasm",
     }
     is_monster = parent_class.lower() in monster_parents
     if re.search(r'\bmonster\b', body_lower):
         is_monster = True
 
     if not is_monster:
+        return None
+
+    # Must have a See state or A_Chase/A_Look/A_SmartChase
+    has_behavior = (
+        re.search(r'^\s*See:', body, re.MULTILINE | re.IGNORECASE)
+        or re.search(r'A_Chase', body)
+        or re.search(r'A_Look', body)
+        or re.search(r'A_SmartChase', body)
+    )
+    if not has_behavior:
         return None
 
     # Extract health (ZScript uses semicolons)
