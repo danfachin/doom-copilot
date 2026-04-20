@@ -1,0 +1,8 @@
+// Register the DoomCopilot auto-spawn EventHandler.
+// Alongside any existing EventHandlers from other mods (ZetaBot,
+// hearth-logger, PB3's own handlers).
+
+gameinfo
+{
+    AddEventHandlers = "DC_AutoSpawnHandler"
+}

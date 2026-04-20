@@ -72,7 +72,66 @@ Then `summonfriend zetabot 0` again.
 
 ## Checkpoint 2 — Squad Deploy preset spawns 3 bots
 
-*(Unlocks after Checkpoint 1 passes. Filled in when Item 5 lands.)*
+**Goal:** Verify the launcher preset composes the right mod stack, the
+auto-spawner deploys the squad on map load, and the four personas are
+visibly distinct in their early behavior.
+
+### Launch
+
+Double-click **[launch/squad_deploy.bat](../launch/squad_deploy.bat)**,
+or from a terminal:
+
+```
+cd D:\Users\Dan\dev\doom-launcher
+py -3 doom_launcher.py --profile squad_deploy
+```
+
+Loads Doom 2 + PB3 + brightmaps + Maps of Chaos + hearth-logger +
+zetabot-fork + hearth-silencer + copilot-mod. Drops you into MAP01
+of Maps of Chaos on skill 5 (Nightmare).
+
+### Pass criteria
+
+Within 1 second of the map loading:
+- Console prints `Doom Copilot: auto-deploying squad at Pilot position`
+- Three `Doom Copilot: deployed <Persona>` lines follow
+- Three bots visible around you (Sharpshooter, Tank, Brawler flavors)
+- HUD is silent of PB3 message spam (hearth-silencer working)
+- hearth-logger running (no pickup spam, logging to data/session_*.log)
+
+### Behavioral checks — are personas visibly distinct?
+
+- **Sharpshooter** hangs back further than the others (follow dist 400/250)
+- **Tank** sticks tight to you (follow dist 180/120)
+- **Brawler** rushes forward, aggressive on engagements (flee at only 15% HP)
+- **Death-Wish** — NOT in auto-deploy squad; test with **F9** keybind.
+  Should ignore you entirely and charge whatever's nearest.
+
+### Key bindings
+
+- **F5** — deploy Sharpshooter+Tank+Brawler squad (same as auto-spawn)
+- **F6** — summon Sharpshooter
+- **F7** — summon Brawler
+- **F8** — summon Tank
+- **F9** — summon Death-Wish (chaos bot)
+- **F12** — kill all bots (dc_disband)
+- **o** — order nearby bots to follow you (ZetaBot default)
+- **u** — disband follow order
+- **p** — order attack on what you're aiming at
+
+### If it fails
+
+- **Bots don't auto-spawn** → check `dc_autospawn_squad` in console: `get dc_autospawn_squad`. Should be 1.
+- **Only 1 or 2 bots spawn** → spacing issue at spawn; the bots may overlap. Move and try F5.
+- **Bots stand still** → check `get zb_autonodes` (should be 1). Press Numpad 7 to see nodes.
+- **Bots don't attack anything** → this is Item 7 territory (PB3 weapon module). They recognize vanilla weapons only right now, so combat will feel broken until Item 7 ships.
+- **Any VM abort** → copy the error, we diagnose.
+
+---
+
+## Checkpoint 3 — Bots use PB3 weapons intelligently
+
+*(Unlocks after Checkpoint 2 passes. Filled in when Items 7+8 land.)*
 
 ---
 
