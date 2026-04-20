@@ -49,6 +49,11 @@ class DC_BotSpawner : Actor
         }
         cont.possessed.angle = angle;
 
+        // Item 9: apply persona movement clamp + hand the loadout.
+        // Both are no-ops for personas that don't override the hooks.
+        cont.ApplyMovementProfile();
+        cont.GiveLoadout();
+
         // Announce persona to console (picked up by hearth-logger if present)
         console.printf("\c[Sapphire]Doom Copilot: deployed %s (\"%s\")",
             cont.PersonaName(),

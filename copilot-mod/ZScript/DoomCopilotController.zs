@@ -13,6 +13,11 @@
 // More dials (RateSelf weapon bias, target priority scale) come
 // online in Item 7 alongside the PB3 weapon module.
 //
+// Item 9 additions:
+//   - Loadout hooks (PrimaryClass1/2, SidearmClass, SidearmAmmoClass)
+//   - Movement tuning (MoveSpeedMult, StrafeDamping) — Warhammer-walk
+//     feel. Death-Wish keeps faster / twitchier movement.
+//
 // Override pattern: we subclass key ZTBotController methods. ZetaBot's
 // methods are not declared `virtual` in all cases, so where ZScript
 // allows override by matching signature we do; where not, we duplicate
@@ -20,6 +25,7 @@
 //   - ShouldFollow (uses FollowMin/FollowMax)
 //   - Subroutine_Flee (uses FleeHpFrac, FleeEnemyDist, CanFlee)
 //   - RefreshSkills (applies AimScatterMult, TurnSpeedMult to CVars)
+//   - RandomStrafe (applies StrafeDamping)
 
 class DoomCopilotController : ZTBotController
 {
@@ -50,6 +56,35 @@ class DoomCopilotController : ZTBotController
     virtual double AimScatterMult()    { return 1.0; }
     // Multiplier on zb_turnspeed (CVar). Higher = faster target lock.
     virtual double TurnSpeedMult()     { return 1.0; }
+
+    // ── Movement feel (Item 9) ─────────────────────────────────
+
+    // Multiplier on the possessed pawn's default Speed. <1.0 = slower,
+    // deliberate movement ("walking-tank" Warhammer feel). Applied
+    // once in PostPossess. Death-Wish keeps 1.0.
+    virtual double MoveSpeedMult()     { return 0.75; }
+
+    // Probability (0..1) that any given RandomStrafe tick actually
+    // applies a side-move, and scalar on the momentum-drift noise.
+    // Lower = more grounded/owns-the-ground, higher = twitchier.
+    // 1.0 reproduces ZetaBot's default. Death-Wish ~0.8.
+    virtual double StrafeDamping()     { return 0.4; }
+
+    // ── Loadout (Item 9) ───────────────────────────────────────
+    //
+    // Weapon class names given to the possessed pawn on spawn.
+    // Blank ("") means "skip this slot" — we hand what the persona
+    // carries, the bot does not pick up anything it stumbles over.
+    //
+    // SidearmAmmoClass feeds the infinite-ammo top-up at spawn
+    // (blank = melee/no ammo). The sidearm's RateSelf keeps it at
+    // the bottom of the picking order; it only fires when primaries
+    // are dry or out-of-range.
+
+    virtual string PrimaryClass1()     { return ""; }
+    virtual string PrimaryClass2()     { return ""; }
+    virtual string SidearmClass()      { return ""; }
+    virtual string SidearmAmmoClass()  { return ""; }
 
     // ── Overrides ──────────────────────────────────────────────
 
@@ -102,5 +137,55 @@ class DoomCopilotController : ZTBotController
     {
         imprecision = CVar.GetCVar("zb_aimstutter").GetFloat() * AimScatterMult();
         maxAngleRate = CVar.GetCVar('zb_turnspeed').GetFloat() * TurnSpeedMult();
+    }
+
+    // Persona-aware strafing. Damps the momentum drift and gates the
+    // actual side-move on a probability roll — gives the bot time to
+    // plant and shoot instead of juking every tic. Death-Wish passes
+    // through at near-full-twitch via a ~0.8 StrafeDamping.
+    override void RandomStrafe()
+    {
+        double d = StrafeDamping();
+
+        // Let momentum decay back toward zero so damped personas don't
+        // pin at ±1 after a few random ticks.
+        strafeMomentum *= (1.0 - (1.0 - d) * 0.15);
+        strafeMomentum += FRandom(-0.1, 0.1) * d;
+
+        if (strafeMomentum < -1) strafeMomentum = -1;
+        if (strafeMomentum > 1)  strafeMomentum =  1;
+
+        // Gate the actual side-move. At d=0.4 the bot skips ~60% of
+        // strafe opportunities, which reads as "owns the ground."
+        if (FRandom(0.0, 1.0) > d) return;
+
+        if (strafeMomentum > 0) possessed.MoveRight();
+        else                     possessed.MoveLeft();
+    }
+
+    // Apply persona speed clamp. Called from DC_BotSpawner right after
+    // the controller is spawned. Safe against null/non-pawn possessed.
+    void ApplyMovementProfile()
+    {
+        if (possessed == null) return;
+        double baseSpeed = GetDefaultByType(possessed.GetClass()).Speed;
+        if (baseSpeed > 0)
+            possessed.Speed = baseSpeed * MoveSpeedMult();
+    }
+
+    // Hand the persona their loadout. Infinite-ammo sidearm via a
+    // large reservoir (9999) of the sidearm's ammo type — bot will
+    // never deplete it in a single map, and primaries use their own
+    // disjoint ammo pools (PB_Shell, PB_HighCalMag, PB_RocketAmmo,
+    // PB_Cell, PB_Fuel). Melee sidearms leave SidearmAmmoClass blank.
+    void GiveLoadout()
+    {
+        if (possessed == null) return;
+
+        if (PrimaryClass1() != "") possessed.GiveInventory(PrimaryClass1(), 1);
+        if (PrimaryClass2() != "") possessed.GiveInventory(PrimaryClass2(), 1);
+        if (SidearmClass()  != "") possessed.GiveInventory(SidearmClass(),  1);
+        if (SidearmAmmoClass() != "")
+            possessed.GiveInventory(SidearmAmmoClass(), 9999);
     }
 }

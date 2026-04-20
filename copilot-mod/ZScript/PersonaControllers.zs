@@ -5,6 +5,11 @@
 //   Numbers below are hand-tuned starting points from the Item 4
 //   scope. Item 8 (calibration) will generate empirically-tuned
 //   replacements from Dan's telemetry — these are the seed values.
+//
+// Item 9 adds loadouts (2 primary + 1 sidearm, infinite-ammo sidearm)
+// and movement-feel knobs (MoveSpeedMult, StrafeDamping). Default
+// personas dial speed to ~0.7 and strafe to ~0.4 for Warhammer-walk
+// feel; Death-Wish stays near ZetaBot defaults.
 
 // ── Sharpshooter ──────────────────────────────────────────────
 // Ranged overwatch. Hangs back, shoots precisely, preserves self.
@@ -24,6 +29,16 @@ class DC_SharpshooterController : DoomCopilotController
     // Tight aim, fast target lock.
     override double AimScatterMult()   { return 0.3; }
     override double TurnSpeedMult()    { return 1.4; }
+
+    // Slow and grounded — marksmen don't juke.
+    override double MoveSpeedMult()    { return 0.65; }
+    override double StrafeDamping()    { return 0.3; }
+
+    // DMR + pump shotgun (effectively slug-role at mid range) + revolver.
+    override string PrimaryClass1()    { return "PB_DMR"; }
+    override string PrimaryClass2()    { return "PB_Shotgun"; }
+    override string SidearmClass()     { return "PB_Revolver"; }
+    override string SidearmAmmoClass() { return "PB_LowCalMag"; }
 }
 
 // ── Brawler ───────────────────────────────────────────────────
@@ -44,6 +59,16 @@ class DC_BrawlerController : DoomCopilotController
     // Less precise but keeps up — closer range = less skill needed.
     override double AimScatterMult()   { return 0.9; }
     override double TurnSpeedMult()    { return 1.2; }
+
+    // Moderate speed, mid damping — advances purposefully, minor weave.
+    override double MoveSpeedMult()    { return 0.85; }
+    override double StrafeDamping()    { return 0.5; }
+
+    // Flamer (primary close-in) + SSG (secondary burst) + fire axe.
+    override string PrimaryClass1()    { return "PB_Flamethrower"; }
+    override string PrimaryClass2()    { return "PB_SSG"; }
+    override string SidearmClass()     { return "PB_Axe"; }
+    override string SidearmAmmoClass() { return ""; }
 }
 
 // ── Tank ──────────────────────────────────────────────────────
@@ -64,6 +89,16 @@ class DC_TankController : DoomCopilotController
     // Medium aim, moderate turn (holds ground).
     override double AimScatterMult()   { return 0.8; }
     override double TurnSpeedMult()    { return 1.0; }
+
+    // Heaviest, slowest, least strafe — owns the ground.
+    override double MoveSpeedMult()    { return 0.6; }
+    override double StrafeDamping()    { return 0.25; }
+
+    // Minigun + rocket launcher + SMG sidearm.
+    override string PrimaryClass1()    { return "PB_Minigun"; }
+    override string PrimaryClass2()    { return "PB_RocketLauncher"; }
+    override string SidearmClass()     { return "PB_SMG"; }
+    override string SidearmAmmoClass() { return "PB_LowCalMag"; }
 }
 
 // ── Death-Wish ────────────────────────────────────────────────
@@ -85,4 +120,14 @@ class DC_DeathwishController : DoomCopilotController
     // Spray-and-pray precision, maximum turn speed.
     override double AimScatterMult()   { return 1.8; }
     override double TurnSpeedMult()    { return 1.8; }
+
+    // Full speed, near-full twitch — the chaos variable.
+    override double MoveSpeedMult()    { return 1.0; }
+    override double StrafeDamping()    { return 0.8; }
+
+    // Plasma rifle + rocket launcher + chainsaw sidearm.
+    override string PrimaryClass1()    { return "PB_M1Plasma"; }
+    override string PrimaryClass2()    { return "PB_RocketLauncher"; }
+    override string SidearmClass()     { return "PB_Chainsaw"; }
+    override string SidearmAmmoClass() { return ""; }
 }

@@ -1475,7 +1475,7 @@ class ZTBotController : Actor {
         return res;
     }
 
-    void RandomStrafe() {
+    virtual void RandomStrafe() {
         strafeMomentum += FRandom(-0.1, 0.1);
 
         if (strafeMomentum < -1)

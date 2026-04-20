@@ -93,11 +93,24 @@ class DC_AutoSpawnHandler : EventHandler
     }
 
     // Spawn a bot spawner actor offset from the player by (dist, relAngle).
+    //
+    // Item 9 fix: previously did pure offset math with no collision test,
+    // which wall-clipped bots on tight maps (observed 2026-04-19 w/ the
+    // 4th squad member behind the player). Now probes 8 candidate
+    // positions in a ring at the requested distance; if all fail, halves
+    // the distance and retries; last resort is the anchor's own position
+    // (guaranteed valid — the Pilot is standing there).
     void SpawnBotNear(Actor anchor, string spawnerClass, double dist, double relAngle)
     {
-        double a = anchor.angle + relAngle;
-        Vector3 offset = (dist * cos(a), dist * sin(a), 0);
-        Vector3 spawnPos = anchor.pos + offset;
+        Vector3 spawnPos;
+        if (!FindSafeSpawn(anchor, dist, relAngle, spawnPos))
+        {
+            // Absolute fallback: on top of the anchor. Push-out resolves
+            // the overlap in the next tic.
+            spawnPos = anchor.pos;
+            console.printf("\c[Orange]Doom Copilot: %s safe-spawn fallback to Pilot position",
+                spawnerClass);
+        }
 
         // replace param omitted → defaults to NO_REPLACE. Our DC_ spawners
         // aren't subject to class replacement so this is fine.
@@ -109,4 +122,67 @@ class DC_AutoSpawnHandler : EventHandler
         }
         botSpawner.angle = anchor.angle;
     }
+
+    // Try the requested (dist, angle); if the point is outside the level
+    // or would embed a pawn-sized actor in geometry, rotate through 7
+    // other angles at the same distance, then retry the whole ring at
+    // half-distance. Returns true + fills outPos on first candidate that
+    // passes Level.IsPointInLevel + TestMobjLocation; false if every
+    // candidate fails (caller falls back to anchor position).
+    bool FindSafeSpawn(Actor anchor, double dist, double relAngle, out Vector3 outPos)
+    {
+        static const double RING[] = { 0, 45, -45, 90, -90, 135, -135, 180 };
+
+        for (int pass = 0; pass < 2; pass++)
+        {
+            double passDist = (pass == 0) ? dist : dist * 0.5;
+            for (int i = 0; i < 8; i++)
+            {
+                double a = anchor.angle + relAngle + RING[i];
+                Vector3 candidate = anchor.pos + (passDist * cos(a), passDist * sin(a), 0);
+
+                if (!Level.IsPointInLevel(candidate)) continue;
+                if (!PointPassesPawnCheck(candidate))  continue;
+
+                outPos = candidate;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Probe whether a PB_PlayerPrawn-sized actor would fit at pos.
+    // We do this by spawning a throwaway MapSpot-like probe actor and
+    // calling TestMobjLocation, then immediately destroying it. The
+    // probe inherits pawn radius/height from the default ZetaBot pawn
+    // anchor so we approximate the real clearance.
+    bool PointPassesPawnCheck(Vector3 pos)
+    {
+        // Quick cheap probe using a spare ZetaBot pawn class isn't
+        // available at this layer, so we use CheckMove from the map's
+        // spawn-point perspective via a temporary probe actor.
+        Actor probe = Actor.Spawn("DC_SpawnProbe", pos, NO_REPLACE);
+        if (probe == null) return false;
+        bool ok = probe.TestMobjLocation();
+        probe.Destroy();
+        return ok;
+    }
+}
+
+// Throwaway probe matching PB_PlayerPrawn clearance. Radius/height
+// should track a PB3 player; 16×56 is the vanilla default and is
+// close enough for the spawn-check use (PB3's prawn uses the same
+// defaults). If this ever diverges, size to the largest persona.
+class DC_SpawnProbe : Actor
+{
+    default
+    {
+        // PB_PlayerPrawn matches vanilla Doom Marine clearance (16×56);
+        // if PB3 ever subclasses a taller prawn, widen this probe.
+        Radius 16;
+        Height 56;
+        +NOGRAVITY
+        +NOBLOCKMAP
+    }
+    states { Spawn: TNT1 A 1; Stop; }
 }
