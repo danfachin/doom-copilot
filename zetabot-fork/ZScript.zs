@@ -3308,6 +3308,14 @@ class ZetaBot : Actor {
         }
 
         cont.angle = angle;
+        // Guard: controller's PostBeginPlay may have returned early (no plausible
+        // pawn type found — zb_btypes anchors didn't match any world actors).
+        // In that case cont.possessed is null and writing would VM-abort.
+        if (cont.possessed == null) {
+            console.printf("\c[Red]ZetaBot: controller has no possessed pawn. Check zb_btypes anchors match loaded mods.");
+            cont.Destroy();
+            return;
+        }
         cont.possessed.angle = angle;
 
         if (zb_autonoderespawn) {

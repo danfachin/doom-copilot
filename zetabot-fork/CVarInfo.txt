@@ -5,7 +5,9 @@ server int zb_debug = 0;
 server string nodeList = "::NONE";
 
 // Registered bot pawn module subclasses. Internal variable, do not edit.
-server string zb_btypes = "ZetaDoom:DoomPlayer;ZetaStrife:StrifePlayer;ZetaSMushes:YellowWyvern;ZetaHeretic:HereticPlayer";
+// PB_PlayerPrawn added FIRST so PB3 integration works (PB3's player class
+// does not inherit from DoomPlayer, so the vanilla anchor never matches).
+server string zb_btypes = "ZetaDoom:PB_PlayerPrawn;ZetaDoom:DoomPlayer;ZetaStrife:StrifePlayer;ZetaSMushes:YellowWyvern;ZetaHeretic:HereticPlayer";
 
 // Registered weapon module subclasses. Internal variable, do not exist.
 server string zb_wtypes = "ZetaDoomWeapons;ZetaStrifeWeapons;ZetaSentientMushesWeapons;ZetaHereticWeapons";

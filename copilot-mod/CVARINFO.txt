@@ -1,0 +1,8 @@
+// Doom Copilot CVars.
+//
+// dc_autospawn_squad — when 1, deploys the 3-bot squad automatically
+//   on every map load. Set from the launcher preset's extra_args:
+//     +set dc_autospawn_squad 1
+//   Leave at 0 for manual summoning via F5/F6/F7/F8/F9 keybinds.
+
+user bool dc_autospawn_squad = false;

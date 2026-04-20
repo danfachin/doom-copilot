@@ -36,7 +36,18 @@ class DC_BotSpawner : Actor
         }
 
         cont.angle = angle;
-        if (cont.possessed) cont.possessed.angle = angle;
+
+        // Guard: if ZTBotController couldn't find a matching zb_btypes anchor,
+        // possessed is null. Clean up rather than crash on subsequent writes.
+        if (cont.possessed == null)
+        {
+            console.printf("\c[Red]Doom Copilot: %s has no possessed pawn. Check zb_btypes anchors match loaded mods.",
+                ControllerClass());
+            cont.Destroy();
+            Destroy();
+            return;
+        }
+        cont.possessed.angle = angle;
 
         // Announce persona to console (picked up by hearth-logger if present)
         console.printf("\c[Sapphire]Doom Copilot: deployed %s (\"%s\")",
