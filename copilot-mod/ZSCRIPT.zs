@@ -21,6 +21,8 @@ version "4.14.2"
 //
 // Load order: zetabot-fork/ → copilot-mod/
 
+#include "ZScript/WeaponModule/PB3Weapons.zs"
+#include "ZScript/WeaponModule/ZetaPB3Weapons.zs"
 #include "ZScript/DoomCopilotController.zs"
 #include "ZScript/PersonaControllers.zs"
 #include "ZScript/Spawners.zs"

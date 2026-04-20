@@ -22,6 +22,21 @@ class DC_AutoSpawnHandler : EventHandler
         deployTic = -1;
         deployed = false;
         EnsurePB3BotTypeAnchor();
+        EnsurePB3WeaponModule();
+    }
+
+    // Ensure our PB3 weapon module is first in zb_wtypes so the bot
+    // recognizes PB_Shotgun/PB_Minigun/etc. as pickable weapons with
+    // proper range ratings. Idempotent.
+    void EnsurePB3WeaponModule()
+    {
+        let cv = CVar.GetCVar("zb_wtypes");
+        if (!cv) return;
+        string cur = cv.GetString();
+        if (cur.IndexOf("ZetaPB3Weapons") >= 0) return;
+        string patched = "ZetaPB3Weapons;" .. cur;
+        cv.SetString(patched);
+        console.printf("\c[Sapphire]Doom Copilot: registered PB3 weapon module in zb_wtypes");
     }
 
     // Ensure ZetaBot's pawn-type picker recognizes PB3's player class.
