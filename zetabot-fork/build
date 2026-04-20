@@ -1,0 +1,301 @@
+#!/bin/bash
+
+printf "\n ---- ZDBuild ----\n"
+printf "       by Gustavo6046\n"
+printf "       under The MIT License\n"
+printf "       at rehermann6046@gmail.com\n"
+printf "\n\n==========================\n"
+
+POSITIONAL=
+FOLDER="Built"
+SCPORT="gzdoom"
+CVAR=""
+IWAD=""
+EXTRA=""
+SPFILES=""
+MAP=""
+LZMA=0
+PLATFORM=$(uname -s | head -c 5)
+RUN=0
+
+REALPATH_CMD="realpath"
+# check if we are on macos
+if [ "$PLATFORM" == "Darwi" ]; then
+    REALPATH_CMD="grealpath"
+    # check if grealpath exists
+    if ! command -v grealpath &> /dev/null; then
+        echo "grealpath not found, please install coreutils using 'brew install coreutils' and try again."
+        exit 1
+    fi
+fi
+
+while [[ $# -gt 0 ]]; do
+    key="$1"
+
+    case $key in
+        -h|--help)
+        echo
+        echo Syntax:
+        echo
+        echo
+        echo "  ./build [-f|--folder <output folder : out>] [-s|--sourceport <path to source port : gzdoom>] [-i|--iwad <path to the mod's IWAD>] [-a|--file|--add <additional PWAD> [-a|--file|--add ...]] [-c|--cvar <additional cvar>=<value> [c|--cvar ...]] [-e|--extra <source port option>=<value> [...]] [-r|--run]"
+        echo
+        echo For example:
+        echo
+        echo "    ./build -f out -s gzdoom -i /usr/games/doom/doom2.wad -c zb_debug=1 -e \"-nomonsters\" -e \"-skill=1\" -e \"+map=MAP18\""
+        echo
+        exit 0
+        ;;
+        # LZMA was removed.
+        -f|--folder)
+        FOLDER="$2"
+        shift # past argument
+        shift # past value
+        ;;
+        -r|--run)
+        RUN=1
+        shift
+        ;;
+        -s|--sourceport)
+        SCPORT="$2"
+        shift # past argument
+        shift # past value
+        ;;
+        -i|--iwad)
+        IWAD="$2"
+        shift # past argument
+        shift # past value
+        ;;
+        -a|--file|--add)
+        SPFILES="$SPFILES;$2"
+        shift
+        shift
+        ;;
+        -m|--map)
+        MAP=$2
+        shift
+        shift
+        ;;
+        -c|--cvar)
+        if [ -z "$CVAR" ]; then
+            CVAR="$2"
+        
+        else
+            CVAR="$CVAR $2"
+            
+        fi
+        shift # past argument
+        shift # past value
+        ;;
+        -e|--extra) # extra source port arguments
+        if [ -z "$EXTRA" ]; then
+            EXTRA="$2"
+        
+        else
+            EXTRA="$EXTRA $2"
+            
+        fi
+        
+        shift # past argument
+        shift # past value
+        ;;
+        *)    # unknown option
+        POSITIONAL+=("$1") # save it in an array for later
+        shift # past argument
+        ;;
+    esac
+done
+
+
+set -- "${POSITIONAL[@]}" # restore positional parameters
+
+BUILDDIR=""
+
+function ADDFILE {
+    if [ $# -eq 1 ]; then
+        if [ -n "$BUILDDIR" ]; then
+            f="$($REALPATH_CMD --relative-to="./$BUILDDIR" "./${BUILDDIR}/${1}")"
+        
+        else
+            f="$($REALPATH_CMD --relative-to="." "./${1}")"
+        
+        fi
+        
+        #FILES+=( "$f" )
+        printf "%s\n" "$f" >>.FILES.txt
+        printf "+ %s\n" "$f"
+
+    else
+        echo "[WARNING] Invalid call to ADDFILE with ${#} arguments (expected 1)!"
+        
+    fi
+}
+
+function ADDALL {
+    if [ -n "$BUILDDIR" ]; then
+        d="${BUILDDIR}/${1}"
+        
+    elif [ $# -eq 1 ]; then
+        d=$1
+
+    else
+        echo "[WARNING] Invalid call to ADDALL with no build dir and ${#} arguments (expected either 1 argument or a build dir)!"
+        d=
+    
+    fi
+
+    if [ -n "$d" ]; then
+        find "$d" -maxdepth 1 -type d | while read -r d; do
+            ADDFOLDER "$(echo "$d" | cut -c $((1 + ${#BUILDDIR}))-)"
+
+        done
+
+        find "$d" -maxdepth 1 -type f | while read -r f; do
+            ADDFILE "$(echo "$f" | cut -c $((1 + ${#BUILDDIR}))-)"
+
+        done
+
+    fi
+}
+
+function ADDFOLDER {
+    if [ -n "$BUILDDIR" ]; then
+        d="${BUILDDIR}/${1}"
+        
+    else
+        d=$1
+    
+    fi
+
+    if [ $# -eq 1 ]; then
+        find "$d" -type f | while read -r f; do
+            ADDFILE "$(echo "$f" | cut -c $((1 + ${#BUILDDIR}))-)"
+            
+        done
+        
+    elif [ $# -eq 2 ]; then
+        find "$d" -type f -name "$2" | while read -r f; do
+            ADDFILE "$(echo "$f" | cut -c $((1 + ${#BUILDDIR}))-)"
+            
+        done
+    
+    else
+        echo "[WARNING] Invalid call to ADDFOLDER with ${#} arguments (expected 1 or 2)!"
+        
+    fi
+}
+
+# Build compilation
+if [ -e "./compile" ]; then
+    . ./compile
+    
+fi
+
+# Pre-configuration
+. ./config
+
+NUMFILES=${#FILES[@]}
+
+owd="$(pwd)"
+
+if [ $LZMA -eq 1 ]; then
+    PKEXT=7
+    
+else
+    PKEXT=3
+
+fi
+
+out="${owd}/${FOLDER}/${NAME}_v${VERSION}.pk${PKEXT}"
+mkdir -p "$FOLDER"
+
+# Create output file
+echo Adding "$NUMFILES" files to output \'"${out}"\'.
+rm "$out" 2>/dev/null # just to make sure file doesn't exist
+
+if [ -n "$BUILDDIR" ]; then
+    cd "$BUILDDIR"
+fi
+
+if [ $LZMA -eq 1 ]; then
+    echo "${FILES[@]}" | tr " " "\n" | tar cf "$out" --lzma -T - || {
+        echo "Error building PK7 output!"
+        exit 1
+    }
+    
+else
+    if [ "$PLATFORM" == "MINGW" ]; then
+        ZIP="./zip.exe"
+        
+    else
+        ZIP="zip"
+
+    fi
+
+    cat "$owd/.FILES.txt" | "$ZIP" -9 "$out" -@ && {
+        rm "$owd/.FILES.txt"
+    } || {
+        echo "Error building PK3 output!"
+        rm "$owd/.FILES.txt"
+        exit 1
+    }
+    
+fi
+
+# Create launch script
+lout="${owd}/${FOLDER}/${NAME}"
+echo "#!/bin/bash" >"$lout"
+printf "\"${SCPORT}\" -iwad \"${IWAD}\" -file \"./${NAME}_v${VERSION}.pk${PKEXT}\"" >>"$lout"
+
+for cv in $CVAR; do
+    printf " +set $(echo "$cv" | awk -F\= '{print $1}') $(echo "$cv" | awk -F\= '{print $2}')" >> "$lout"
+    
+done
+
+(
+    IFS=';'
+    
+    for spf in $SPFILES; do
+        if [ ! "$spf" == "" ]; then
+            printf ' -file "' >> "$lout"
+            printf "$spf" >> "$lout"
+            printf '"' >> "$lout"
+            
+        fi
+    done
+)
+
+for eo in $EXTRA; do
+    printf " $(echo "$eo" | awk -F\= '{print $1}') $(echo "$eo" | awk -F\= '{print $2}')" >> "$lout"
+    
+done
+
+if [ ! $MAP == "" ]; then
+    printf " +map $MAP" >> "$lout"
+
+fi
+
+cd "$owd" || exit
+chmod +x "$lout"
+
+# Post-build
+if [ -e "./postbuild" ]; then
+    . ./postbuild "$OUT"
+    
+fi
+
+printf "#"'!'"/bin/bash\ncd \"${FOLDER}\"; \"./${NAME}\"; cd \"${owd}\"\n" >./run
+chmod +x run
+
+if [ "$RUN" == "1" ]; then
+    echo "Running..."
+    ./run && (
+        echo "PK${PKEXT} built succesfully: \"$out\""
+    ) || (
+        echo "Error while running '$out' through $SCPORT!"
+    )
+
+else
+    echo "PK${PKEXT} built succesfully: $out"
+
+fi

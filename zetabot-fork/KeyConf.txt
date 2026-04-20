@@ -1,0 +1,61 @@
+defaultbind kp1 "summon ztcrouchnode 0"
+defaultbind kp2 "summon ztnormalnode 0"
+defaultbind kp3 "summon ztusenode 0"
+defaultbind kp4 "summon ztjumpnode 0"
+defaultbind kp5 "summon ztshootnode 0"
+defaultbind kp6 "summon ztslownode 0"
+defaultbind kp7 "zt_showpaths"
+defaultbind kp8 "summon ZTUploadNodes"
+defaultbind kp9 "summon ZTPromptNodes"
+defaultbind kp/ "summon ZTDeleteNodes"
+defaultbind kp* "kill ZetaBotPawn"
+defaultbind kp. "summonfriend zetabot 0"
+defaultbind p "summon ZTBotAttackOrder 0"
+defaultbind o "summon ZTBotFollowMeOrder 0"
+defaultbind i "summon ZTBotFollowOrder 0"
+defaultbind u "summon ZTBotDisbandOrder 0"
+defaultbind y "summon ZTBotFleeOrder 0"
+
+//----------
+
+addkeysection "ZetaBot General" "zetabots_general"
+
+addmenukey "Spawn ZetaBot" "summonfriend zetabot 0"
+addmenukey "Kill All Bots" "kill ZetaBotPawn"
+
+addkeysection "ZetaBot Orders" "zetabots_order"
+
+addmenukey "Order: Attack Looked" "summon ztbotattackorder"
+addmenukey "Order: Follow Me" "summon ztbotfollowmeorder"
+addmenukey "Order: Follow Looked" "summon ztbotfolloworder"
+addmenukey "Order: Wander" "summon ztbotwanderorder"
+addmenukey "Order: Flee Looked" "summon ztbotfleeorder"
+addmenukey "Order: Disband from Me" "summon ztbotdisbandorder"
+
+
+addkeysection "ZetaBot Pathing" "zetabots_paths"
+
+addmenukey "Pathnode: Normal" "summon ztnormalnode 0"
+addmenukey "Pathnode: Use" "summon ztusenode 0"
+addmenukey "Pathnode: Jump" "summon ztjumpnode 0"
+addmenukey "Pathnode: Shoot" "summon ztshootnode 0"
+addmenukey "Pathnode: Crouch" "summon ztcrouchnode 0"
+addmenukey "Pathnode: Slow" "summon ztslownode 0"
+addmenukey "Pathnode: Avoid" "summon ztavoidnode 0"
+addmenukey "Pathnode: Block" "summon ztblocknode 0"
+addmenukey "Pathnode: Candy" "summon ztcandynode 0"
+addmenukey "Pathnode: Candy-Once-Only" "summon ztcandyoncenode 0"
+addmenukey "Pathnode: Respawn Node" "summon ztrespawnnode 0"
+addmenukey "Pathnode: Teleport Spot (to Last Node)" "summon ztteleporttoprevnode 0"
+addmenukey "Pathnode: Teleport Spot (to Next Node)" "summon ztteleporttonextnode 0"
+addmenukey "Delete Last Pathnode" "summon ztbackspacenode"
+addmenukey "Clear All Pathnodes" "summon ztdeletenodes"
+
+//----------
+
+alias superzeta "summonfriend ZetaBot 0; wait 3; test $r_superzeta superzeta"
+alias +superzeta "set r_superzeta 1; superzeta"
+alias -superzeta "set r_superzeta 0"
+
+alias zt_showpaths "summon ZTShowAllPaths"
+alias zt_pathmode "god; noclip; notarget"
