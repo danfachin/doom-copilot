@@ -84,7 +84,9 @@ class DC_AutoSpawnHandler : EventHandler
         Vector3 offset = (dist * cos(a), dist * sin(a), 0);
         Vector3 spawnPos = anchor.pos + offset;
 
-        Actor botSpawner = Actor.Spawn(spawnerClass, spawnPos, Actor.ALLOW_REPLACE);
+        // replace param omitted → defaults to NO_REPLACE. Our DC_ spawners
+        // aren't subject to class replacement so this is fine.
+        Actor botSpawner = Actor.Spawn(spawnerClass, spawnPos);
         if (!botSpawner)
         {
             console.printf("\c[Red]Doom Copilot: Spawn(%s) returned null", spawnerClass);
