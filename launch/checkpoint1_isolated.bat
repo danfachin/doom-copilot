@@ -9,6 +9,9 @@ uzdoom.exe ^
     -iwad "D:\Users\Dan\games\DOOM\Brutality\Doom2.wad" ^
     -file "D:\Users\Dan\dev\doom-copilot\zetabot-fork" ^
     +map MAP01 ^
-    -skill 2
+    -skill 2 ^
+    +set zb_autonodes 1 ^
+    +set zb_autonodenormal 1 ^
+    +set zb_autonodeuse 1
 
 pause

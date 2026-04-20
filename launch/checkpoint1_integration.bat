@@ -13,6 +13,9 @@ uzdoom.exe ^
            "D:\Users\Dan\dev\doom-copilot\hearth-silencer" ^
     +map MAP01 ^
     -skill 2 ^
+    +set zb_autonodes 1 ^
+    +set zb_autonodenormal 1 ^
+    +set zb_autonodeuse 1 ^
     +logfile "D:\Users\Dan\dev\doom-copilot\data\session_checkpoint1.log"
 
 pause

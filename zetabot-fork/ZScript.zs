@@ -1110,7 +1110,11 @@ class ZTBotController : Actor {
 
     void SmartMove(ZTPathNode toward = null) {
         if (toward == null) toward = navDest;
+        // Guard: if currNode is null (map has no path nodes and autonodes
+        // hasn't plopped one yet), Distance3D would null-deref. Skip the
+        // "fall back to currNode" branch entirely in that case.
         if (
+            currNode != null &&
             (
                 toward == null ||
                 !possessed.CheckSight(toward)
