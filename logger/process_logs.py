@@ -16,7 +16,8 @@ from collections import Counter, defaultdict
 from datetime import datetime
 
 SCRIPT_DIR = Path(__file__).parent
-DATA_DIR = SCRIPT_DIR / "data"
+REPO_ROOT = SCRIPT_DIR.parent
+DATA_DIR = REPO_ROOT / "data"
 PROCESSED_DIR = DATA_DIR / "processed"
 HL_PATTERN = re.compile(r"\[HL\](.+)")
 TICS_PER_SEC = 35.0

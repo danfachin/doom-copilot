@@ -1,22 +1,31 @@
 version "4.2"
 
 // Hearth Doom Logger — invisible telemetry for AI co-op research
-// Outputs structured JSON to console (captured via -logfile)
+// Outputs structured JSON to console (captured via -logfile / +logfile)
 // Prefix: [HL] — all other console output is ignored by post-processor
+//
+// Two sample rates:
+//   state + enemy scan: LOG_INTERVAL  (2 Hz)  — semantic snapshots for the brain layer
+//   player action:      ACTION_INTERVAL (~9 Hz) — dense input labels for bot tuning
 
 class HearthLogger : EventHandler
 {
-    const LOG_INTERVAL = 18;    // tics between state snapshots (~2/sec at 35 tic/sec)
-    const SCAN_RADIUS = 2048.0; // map units — covers most combat encounters
-    const MAX_ENEMIES = 20;     // cap per snapshot to limit log volume
+    const LOG_INTERVAL    = 18;    // tics between state+enemy snapshots (~2/sec)
+    const ACTION_INTERVAL = 4;     // tics between player-cmd snapshots (~8.75/sec)
+    const SCAN_RADIUS     = 2048.0;
+    const MAX_ENEMIES     = 20;
 
     int sessionKills;
     int lastLogTic;
+    int lastActionTic;
+    string lastWeapon;
 
     override void OnRegister()
     {
         sessionKills = 0;
         lastLogTic = -999;
+        lastActionTic = -999;
+        lastWeapon = "";
     }
 
     // ── Map lifecycle ──────────────────────────────────────────
@@ -24,6 +33,7 @@ class HearthLogger : EventHandler
     override void WorldLoaded(WorldEvent e)
     {
         sessionKills = 0;
+        lastWeapon = "";
         console.printf("[HL]{\"t\":\"map_start\",\"map\":\"%s\",\"skill\":%d}",
             level.MapName, G_SkillPropertyInt(SKILLP_ACSReturn));
     }
@@ -34,17 +44,57 @@ class HearthLogger : EventHandler
             level.MapName, level.time, sessionKills);
     }
 
-    // ── Per-tic state capture ──────────────────────────────────
+    // ── Per-tic capture ────────────────────────────────────────
 
     override void WorldTick()
+    {
+        let pmo = players[consoleplayer].mo;
+        if (!pmo) return;
+
+        TickAction(pmo);
+        TickState(pmo);
+    }
+
+    // High-rate player-input capture (~9 Hz). Small payload, each row is one action frame.
+    void TickAction(PlayerPawn pmo)
+    {
+        if (level.time - lastActionTic < ACTION_INTERVAL) return;
+        lastActionTic = level.time;
+
+        let pl = pmo.player;
+        if (!pl) return;
+
+        // Detect weapon switch (emit on change, independent of interval)
+        string weapName = "None";
+        if (pl.ReadyWeapon) weapName = pl.ReadyWeapon.GetClassName();
+        if (weapName != lastWeapon)
+        {
+            console.printf("[HL]{\"t\":\"weapon_switch\",\"tic\":%d,"
+                .."\"from\":\"%s\",\"to\":\"%s\"}",
+                level.time, lastWeapon, weapName);
+            lastWeapon = weapName;
+        }
+
+        // UserCmd fields: buttons (bitfield), forwardmove, sidemove, yaw (turn delta), pitch (look delta)
+        int btn = pl.cmd.buttons;
+        int fwd = pl.cmd.forwardmove;
+        int side = pl.cmd.sidemove;
+        int yaw = pl.cmd.yaw;
+        int pitchDelta = pl.cmd.pitch;
+
+        console.printf("[HL]{\"t\":\"action\",\"tic\":%d,"
+            .."\"btn\":%d,\"fwd\":%d,\"side\":%d,\"yaw\":%d,\"pdel\":%d,"
+            .."\"pa\":%.1f,\"pp\":%.1f}",
+            level.time, btn, fwd, side, yaw, pitchDelta,
+            pmo.angle, pmo.pitch);
+    }
+
+    // Semantic snapshot for the strategic/brain layer (~2 Hz).
+    void TickState(PlayerPawn pmo)
     {
         if (level.time - lastLogTic < LOG_INTERVAL) return;
         lastLogTic = level.time;
 
-        let pmo = players[consoleplayer].mo;
-        if (!pmo) return;
-
-        // Weapon + ammo
         string weapName = "None";
         int ammoCount = 0;
         let weap = pmo.player.ReadyWeapon;
@@ -54,19 +104,17 @@ class HearthLogger : EventHandler
             if (weap.Ammo1) ammoCount = weap.Ammo1.Amount;
         }
 
-        // Player state snapshot
         console.printf("[HL]{\"t\":\"state\",\"tic\":%d,\"map\":\"%s\","
-            .."\"px\":%.0f,\"py\":%.0f,\"pz\":%.0f,\"pa\":%.1f,"
+            .."\"px\":%.0f,\"py\":%.0f,\"pz\":%.0f,\"pa\":%.1f,\"pp\":%.1f,"
             .."\"hp\":%d,\"ar\":%d,"
             .."\"weapon\":\"%s\",\"ammo\":%d,\"kills\":%d,"
             .."\"vx\":%.0f,\"vy\":%.0f}",
             level.time, level.MapName,
-            pmo.pos.x, pmo.pos.y, pmo.pos.z, pmo.angle,
+            pmo.pos.x, pmo.pos.y, pmo.pos.z, pmo.angle, pmo.pitch,
             pmo.health, pmo.CountInv("BasicArmor"),
             weapName, ammoCount, sessionKills,
             pmo.vel.x, pmo.vel.y);
 
-        // Scan nearby living enemies
         int logged = 0;
         let it = ThinkerIterator.Create("Actor");
         Actor mo;
@@ -78,9 +126,10 @@ class HearthLogger : EventHandler
             double dist = pmo.Distance3D(mo);
             if (dist > SCAN_RADIUS) continue;
 
-            double relAngle = deltaangle(pmo.angle, pmo.AngleTo(mo));
+            double relAngle = pmo.AngleTo(mo) - pmo.angle;
+            if (relAngle > 180) relAngle -= 360;
+            if (relAngle < -180) relAngle += 360;
 
-            // Classify enemy behavior state
             string mstate = "idle";
             if (mo.SeeState && mo.InStateSequence(mo.CurState, mo.SeeState))
                 mstate = "chase";
@@ -105,7 +154,6 @@ class HearthLogger : EventHandler
     {
         if (!e.thing) return;
 
-        // Monster killed
         if (e.thing.bISMONSTER)
         {
             sessionKills++;
@@ -117,7 +165,6 @@ class HearthLogger : EventHandler
                 e.thing.SpawnHealth(), killer);
         }
 
-        // Player died
         if (e.thing.player)
         {
             string killedBy = "unknown";
@@ -132,7 +179,6 @@ class HearthLogger : EventHandler
     {
         if (!e.thing) return;
 
-        // Player took damage
         if (e.thing.player)
         {
             string src = "world";
@@ -143,11 +189,8 @@ class HearthLogger : EventHandler
         }
     }
 
-    // ── Item pickups ───────────────────────────────────────────
-
     override void WorldThingRevived(WorldEvent e)
     {
-        // Archvile resurrections — important tactical event
         if (e.thing && e.thing.bISMONSTER)
         {
             console.printf("[HL]{\"t\":\"revived\",\"tic\":%d,\"class\":\"%s\"}",
