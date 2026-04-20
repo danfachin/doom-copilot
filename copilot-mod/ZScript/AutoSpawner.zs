@@ -84,12 +84,12 @@ class DC_AutoSpawnHandler : EventHandler
         Vector3 offset = (dist * cos(a), dist * sin(a), 0);
         Vector3 spawnPos = anchor.pos + offset;
 
-        Actor spawner = Spawn(spawnerClass, spawnPos, ALLOW_REPLACE);
-        if (!spawner)
+        Actor botSpawner = Actor.Spawn(spawnerClass, spawnPos, Actor.ALLOW_REPLACE);
+        if (!botSpawner)
         {
             console.printf("\c[Red]Doom Copilot: Spawn(%s) returned null", spawnerClass);
             return;
         }
-        spawner.angle = anchor.angle;
+        botSpawner.angle = anchor.angle;
     }
 }
