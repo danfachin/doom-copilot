@@ -1,0 +1,8 @@
+// Hearth Silencer — swap PB3's status bar for our silent subclass.
+// Must be loaded AFTER Project Brutality in the -file argument chain,
+// so the gameinfo.StatusBarClass override wins.
+
+gameinfo
+{
+    StatusBarClass = "Hearth_SilentHud"
+}
