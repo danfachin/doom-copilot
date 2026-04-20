@@ -2415,7 +2415,7 @@ class ZTBotController : Actor {
         }
     }
 
-    void Subroutine_Flee() {
+    virtual void Subroutine_Flee() {
         if (DodgeAndUse()) {
             if (currNode)
                 navDest = currNode.RandomNeighborRoughlyToward(vel.xy, 0.5);
@@ -2782,7 +2782,7 @@ class ZTBotController : Actor {
         return LineOfSight(who);
     }
 
-    bool ShouldFollow(Actor who) {
+    virtual bool ShouldFollow(Actor who) {
         if (!who) {
             return false;
         }
@@ -3164,7 +3164,7 @@ class ZTBotController : Actor {
         }
     }
 
-    void RefreshSkills() {
+    virtual void RefreshSkills() {
         imprecision = CVar.GetCVar("zb_aimstutter").GetFloat();
         maxAngleRate = CVar.GetCVar('zb_turnspeed').GetFloat();
     }

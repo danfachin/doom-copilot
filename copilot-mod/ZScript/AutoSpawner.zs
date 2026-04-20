@@ -21,6 +21,25 @@ class DC_AutoSpawnHandler : EventHandler
     {
         deployTic = -1;
         deployed = false;
+        EnsurePB3BotTypeAnchor();
+    }
+
+    // Ensure ZetaBot's pawn-type picker recognizes PB3's player class.
+    // Without this, summoning a bot under PB3 fails silently (controller
+    // spawns with null possessed). Idempotent — only prepends if missing.
+    //
+    // We do this from ZScript instead of a launcher +set arg because
+    // GZDoom's command-line handler splits CVar values on ';', which
+    // corrupts the zb_btypes string.
+    void EnsurePB3BotTypeAnchor()
+    {
+        let cv = CVar.GetCVar("zb_btypes");
+        if (!cv) return;
+        string cur = cv.GetString();
+        if (cur.IndexOf("PB_PlayerPrawn") >= 0) return;
+        string patched = "ZetaDoom:PB_PlayerPrawn;" .. cur;
+        cv.SetString(patched);
+        console.printf("\c[Sapphire]Doom Copilot: registered PB_PlayerPrawn anchor in zb_btypes");
     }
 
     override void WorldLoaded(WorldEvent e)
