@@ -131,13 +131,52 @@ Within 1 second of the map loading:
 
 ## Checkpoint 3 — Bots use PB3 weapons intelligently
 
-*(Unlocks after Checkpoint 2 passes. Filled in when Items 7+8 land.)*
+**Goal:** Verify the PB3 weapon module is wired up and bots are making
+range-appropriate weapon choices against PB3 enemies.
 
----
+### Launch
 
-## Checkpoint 3 — Bots use PB3 weapons intelligently
+Same as Checkpoint 2: double-click `launch/squad_deploy.bat`.
 
-*(Unlocks after Checkpoint 2 passes. Filled in when Items 7+8 land.)*
+### Pass criteria
+
+Within 30 seconds of combat starting:
+- Bots pick up PB3 weapons (not stuck on pistol forever)
+- At **close range** (<128u): bots pull shotguns, chainsaws, fists
+- At **medium range** (256–768u): bots use DMR, Carbine, Minigun, SSG
+- At **long range** (>1000u): bots favor DMR, BFG
+- Bots do **NOT** rocket-launch themselves when an enemy is <160u
+  (RateSelf returns -100 for rockets inside 160u)
+- Bots use BFG **only** against spawnHealth≥200 enemies
+
+### Console watch
+
+- `Doom Copilot: registered PB3 weapon module in zb_wtypes` at mod load
+- `[HL]{"t":"kill",...,"killer":"ZetaDoom"}` lines in data/session_*.log
+  prove bots are landing hits
+
+### Calibration
+
+After the session, run:
+```
+py -3 brain/calibrate_personas.py
+```
+Regenerates `brain/calibrated.md` with updated threat weights, weapon
+dwell, flee thresholds, and engagement ranges.
+
+### Apply calibration (optional)
+
+If the numbers look better than my hand-tuned seeds, hand-edit
+`copilot-mod/ZScript/PersonaControllers.zs` (flee fractions) or
+`copilot-mod/ZScript/WeaponModule/PB3Weapons.zs` (RateSelf curves).
+Nothing auto-patches — keep design intent separate from empirical signal.
+
+### If it fails
+
+- **Bots holding pistol only** → `get zb_wtypes` — should start with `ZetaPB3Weapons;`
+- **Bots rocket-suiciding** → close-range RateSelf guard failed; null target?
+- **VM crash during combat** → paste stack; likely null target in a Fire()
+- **Bots don't kill anything** → damage too low, bump numbers in PB3Weapons.zs
 
 ---
 
