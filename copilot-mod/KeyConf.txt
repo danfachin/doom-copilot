@@ -1,0 +1,17 @@
+// Doom Copilot — squad-summon keybinds.
+// F6-F9 summon each persona as a +FRIENDLY bot.
+// Shift+F6-F9 summons the matching hostile variant for testing (not yet defined).
+
+defaultbind F6 "summonfriend dc_sharpshooter 0"
+defaultbind F7 "summonfriend dc_brawler 0"
+defaultbind F8 "summonfriend dc_tank 0"
+defaultbind F9 "summonfriend dc_deathwish 0"
+
+// Quick squad deploy — one press, all three bots.
+// Use with a non-Sharpshooter persona for the player flavor to avoid duplication.
+alias "dc_deploy_squad" "summonfriend dc_sharpshooter 0; summonfriend dc_tank 0; summonfriend dc_brawler 0"
+defaultbind F5 "dc_deploy_squad"
+
+// Clear squad (kills all DoomCopilotControllers + their pawns).
+alias "dc_disband" "kill DoomCopilotController; kill ZetaBotPawn"
+defaultbind F12 "dc_disband"
