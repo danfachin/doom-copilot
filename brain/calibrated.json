@@ -1,0 +1,414 @@
+{
+  "source_sessions": 6,
+  "source_maps": 17,
+  "total_kills": 1441,
+  "total_deaths": 7,
+  "play_time_min": 118.7,
+  "threat_weights": [
+    {
+      "class": "HelmetSergeantLastStand1",
+      "damage_per_encounter": 0.083,
+      "weight": 1.0,
+      "total_damage_instances": 1,
+      "encounters": 12
+    },
+    {
+      "class": "PB_InfernalArachnotron",
+      "damage_per_encounter": 0.021,
+      "weight": 0.253,
+      "total_damage_instances": 2,
+      "encounters": 95
+    },
+    {
+      "class": "PB_Daedabus",
+      "damage_per_encounter": 0.019,
+      "weight": 0.227,
+      "total_damage_instances": 18,
+      "encounters": 951
+    },
+    {
+      "class": "PB_PistolZombieman2",
+      "damage_per_encounter": 0.015,
+      "weight": 0.179,
+      "total_damage_instances": 49,
+      "encounters": 3290
+    },
+    {
+      "class": "ASGGuy",
+      "damage_per_encounter": 0.014,
+      "weight": 0.172,
+      "total_damage_instances": 15,
+      "encounters": 1049
+    },
+    {
+      "class": "PB_HelmetCommando",
+      "damage_per_encounter": 0.011,
+      "weight": 0.127,
+      "total_damage_instances": 25,
+      "encounters": 2368
+    },
+    {
+      "class": "PB_Commando",
+      "damage_per_encounter": 0.01,
+      "weight": 0.119,
+      "total_damage_instances": 52,
+      "encounters": 5232
+    },
+    {
+      "class": "PB_Phantasm",
+      "damage_per_encounter": 0.009,
+      "weight": 0.109,
+      "total_damage_instances": 6,
+      "encounters": 660
+    },
+    {
+      "class": "PB_CyberKnight",
+      "damage_per_encounter": 0.009,
+      "weight": 0.105,
+      "total_damage_instances": 30,
+      "encounters": 3431
+    },
+    {
+      "class": "PB_HelmetZombieman",
+      "damage_per_encounter": 0.008,
+      "weight": 0.097,
+      "total_damage_instances": 31,
+      "encounters": 3846
+    },
+    {
+      "class": "PB_Zombieman",
+      "damage_per_encounter": 0.007,
+      "weight": 0.079,
+      "total_damage_instances": 43,
+      "encounters": 6528
+    },
+    {
+      "class": "PB_ShotgunGuy",
+      "damage_per_encounter": 0.007,
+      "weight": 0.078,
+      "total_damage_instances": 56,
+      "encounters": 8594
+    },
+    {
+      "class": "PB_Knight",
+      "damage_per_encounter": 0.006,
+      "weight": 0.069,
+      "total_damage_instances": 12,
+      "encounters": 2100
+    },
+    {
+      "class": "PB_CyberBaron",
+      "damage_per_encounter": 0.006,
+      "weight": 0.067,
+      "total_damage_instances": 9,
+      "encounters": 1606
+    },
+    {
+      "class": "PB_BeamRev",
+      "damage_per_encounter": 0.005,
+      "weight": 0.057,
+      "total_damage_instances": 2,
+      "encounters": 422
+    },
+    {
+      "class": "PB_ShotgunGuyHelmet",
+      "damage_per_encounter": 0.004,
+      "weight": 0.043,
+      "total_damage_instances": 71,
+      "encounters": 19985
+    },
+    {
+      "class": "PB_CarbineZombieman",
+      "damage_per_encounter": 0.003,
+      "weight": 0.038,
+      "total_damage_instances": 7,
+      "encounters": 2216
+    },
+    {
+      "class": "DNImpVariant2",
+      "damage_per_encounter": 0.002,
+      "weight": 0.023,
+      "total_damage_instances": 28,
+      "encounters": 14721
+    },
+    {
+      "class": "PB_PistolZombieman1",
+      "damage_per_encounter": 0.002,
+      "weight": 0.022,
+      "total_damage_instances": 8,
+      "encounters": 4383
+    },
+    {
+      "class": "PB_Spectre",
+      "damage_per_encounter": 0.002,
+      "weight": 0.02,
+      "total_damage_instances": 8,
+      "encounters": 4893
+    },
+    {
+      "class": "PB_ZombieScientist",
+      "damage_per_encounter": 0.001,
+      "weight": 0.016,
+      "total_damage_instances": 6,
+      "encounters": 4521
+    },
+    {
+      "class": "PB_ZombieScientistChainsaw",
+      "damage_per_encounter": 0.001,
+      "weight": 0.015,
+      "total_damage_instances": 5,
+      "encounters": 4070
+    },
+    {
+      "class": "PB_Imp1",
+      "damage_per_encounter": 0.001,
+      "weight": 0.015,
+      "total_damage_instances": 26,
+      "encounters": 21311
+    },
+    {
+      "class": "DNImpVariant3",
+      "damage_per_encounter": 0.001,
+      "weight": 0.014,
+      "total_damage_instances": 11,
+      "encounters": 9739
+    },
+    {
+      "class": "PB_InfectedImp",
+      "damage_per_encounter": 0.001,
+      "weight": 0.008,
+      "total_damage_instances": 37,
+      "encounters": 53043
+    },
+    {
+      "class": "DNImpVariant1",
+      "damage_per_encounter": 0.001,
+      "weight": 0.007,
+      "total_damage_instances": 6,
+      "encounters": 10326
+    },
+    {
+      "class": "PB_InfernalCaco",
+      "damage_per_encounter": 0.001,
+      "weight": 0.006,
+      "total_damage_instances": 4,
+      "encounters": 7599
+    },
+    {
+      "class": "PB_Demon",
+      "damage_per_encounter": 0.0,
+      "weight": 0.005,
+      "total_damage_instances": 5,
+      "encounters": 11562
+    }
+  ],
+  "weapon_effectiveness": [
+    {
+      "weapon": "PB_Shotgun",
+      "dwell_tics": 3594,
+      "dwell_frac": 1.0,
+      "dwell_sec": 102.7
+    },
+    {
+      "weapon": "PB_Minigun",
+      "dwell_tics": 1734,
+      "dwell_frac": 0.482,
+      "dwell_sec": 49.5
+    },
+    {
+      "weapon": "PB_DMR",
+      "dwell_tics": 1456,
+      "dwell_frac": 0.405,
+      "dwell_sec": 41.6
+    },
+    {
+      "weapon": "PB_SSG",
+      "dwell_tics": 1294,
+      "dwell_frac": 0.36,
+      "dwell_sec": 37.0
+    },
+    {
+      "weapon": "PB_Autoshotgun",
+      "dwell_tics": 944,
+      "dwell_frac": 0.263,
+      "dwell_sec": 27.0
+    },
+    {
+      "weapon": "PB_Carbine",
+      "dwell_tics": 938,
+      "dwell_frac": 0.261,
+      "dwell_sec": 26.8
+    },
+    {
+      "weapon": "PB_Revolver",
+      "dwell_tics": 909,
+      "dwell_frac": 0.253,
+      "dwell_sec": 26.0
+    },
+    {
+      "weapon": "PB_RocketLauncher",
+      "dwell_tics": 796,
+      "dwell_frac": 0.221,
+      "dwell_sec": 22.7
+    },
+    {
+      "weapon": "PB_Pistol",
+      "dwell_tics": 678,
+      "dwell_frac": 0.189,
+      "dwell_sec": 19.4
+    },
+    {
+      "weapon": "PB_Flamethrower",
+      "dwell_tics": 515,
+      "dwell_frac": 0.143,
+      "dwell_sec": 14.7
+    },
+    {
+      "weapon": "PB_Chainsaw",
+      "dwell_tics": 479,
+      "dwell_frac": 0.133,
+      "dwell_sec": 13.7
+    },
+    {
+      "weapon": "PB_BFG9000",
+      "dwell_tics": 253,
+      "dwell_frac": 0.07,
+      "dwell_sec": 7.2
+    },
+    {
+      "weapon": "PB_M2Plasma",
+      "dwell_tics": 243,
+      "dwell_frac": 0.068,
+      "dwell_sec": 6.9
+    },
+    {
+      "weapon": "PB_Axe",
+      "dwell_tics": 103,
+      "dwell_frac": 0.029,
+      "dwell_sec": 2.9
+    },
+    {
+      "weapon": "PB_M1Plasma",
+      "dwell_tics": 64,
+      "dwell_frac": 0.018,
+      "dwell_sec": 1.8
+    },
+    {
+      "weapon": "PB_Fists",
+      "dwell_tics": 35,
+      "dwell_frac": 0.01,
+      "dwell_sec": 1.0
+    }
+  ],
+  "flee_threshold": {
+    "deaths_sampled": 7,
+    "death_hp_median": 10,
+    "death_hp_min": 1,
+    "survival_low_hp_p10": 41,
+    "survival_low_hp_p25": 60,
+    "survival_low_hp_p50": 78,
+    "flee_thresh_frac_safe": 0.78,
+    "flee_thresh_frac_tank": 0.6,
+    "flee_thresh_frac_brawler": 0.41
+  },
+  "engagement_ranges": {
+    "PB_Shotgun": {
+      "kills": 367,
+      "range_p25": 189,
+      "range_median": 287,
+      "range_p75": 405,
+      "range_mean": 331
+    },
+    "PB_Minigun": {
+      "kills": 307,
+      "range_p25": 248,
+      "range_median": 347,
+      "range_p75": 625,
+      "range_mean": 440
+    },
+    "PB_SSG": {
+      "kills": 195,
+      "range_p25": 199,
+      "range_median": 300,
+      "range_p75": 489,
+      "range_mean": 405
+    },
+    "PB_RocketLauncher": {
+      "kills": 178,
+      "range_p25": 288,
+      "range_median": 337,
+      "range_p75": 547,
+      "range_mean": 437
+    },
+    "PB_DMR": {
+      "kills": 174,
+      "range_p25": 174,
+      "range_median": 224,
+      "range_p75": 395,
+      "range_mean": 307
+    },
+    "PB_BFG9000": {
+      "kills": 131,
+      "range_p25": 131,
+      "range_median": 204,
+      "range_p75": 375,
+      "range_mean": 297
+    },
+    "PB_Carbine": {
+      "kills": 131,
+      "range_p25": 254,
+      "range_median": 836,
+      "range_p75": 1158,
+      "range_mean": 721
+    },
+    "PB_Autoshotgun": {
+      "kills": 102,
+      "range_p25": 221,
+      "range_median": 281,
+      "range_p75": 434,
+      "range_mean": 356
+    },
+    "PB_Revolver": {
+      "kills": 74,
+      "range_p25": 288,
+      "range_median": 539,
+      "range_p75": 897,
+      "range_mean": 600
+    },
+    "PB_Pistol": {
+      "kills": 55,
+      "range_p25": 158,
+      "range_median": 233,
+      "range_p75": 349,
+      "range_mean": 277
+    },
+    "PB_Chainsaw": {
+      "kills": 55,
+      "range_p25": 47,
+      "range_median": 65,
+      "range_p75": 139,
+      "range_mean": 156
+    },
+    "PB_Flamethrower": {
+      "kills": 40,
+      "range_p25": 180,
+      "range_median": 264,
+      "range_p75": 1110,
+      "range_mean": 568
+    },
+    "PB_Axe": {
+      "kills": 12,
+      "range_p25": 125,
+      "range_median": 204,
+      "range_p75": 749,
+      "range_mean": 393
+    },
+    "PB_M2Plasma": {
+      "kills": 12,
+      "range_p25": 207,
+      "range_median": 235,
+      "range_p75": 319,
+      "range_mean": 274
+    }
+  }
+}
