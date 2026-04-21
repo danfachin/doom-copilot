@@ -15,7 +15,7 @@ class ZetaBullet : Actor
 		Damage (0);
 		Speed 0;
 		ZetaBullet.BulletColor "Gold";
-		Species "ZetaBot";
+		Species "ZetaBotGuy";   // must match ZetaBotPawn.Species — THRUSPECIES only skips actors with the exact same Species name
 		+THRUSPECIES
 		Projectile;
 		Radius 1;

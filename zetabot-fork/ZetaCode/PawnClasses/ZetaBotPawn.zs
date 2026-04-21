@@ -99,8 +99,8 @@ class ZetaBotPawn : Actor {
 	MovementModifier moveType;
 	bool bShooting; // for visual purposes
 	ZTBotController cont;
-	const speedMod = 1;
-	
+	double speedMod;   // was const 1 — DoomCopilotController.ApplyMovementProfile clamps this per persona
+
 	void BotThrust(double maxSpeed, double angle) {
 		Thrust(maxSpeed * speedMod, angle);
 	}
@@ -122,6 +122,8 @@ class ZetaBotPawn : Actor {
 	override void BeginPlay() {
 		Array<String> dweap;
 		defweap.split(dweap, ",");
+
+		if (speedMod == 0) speedMod = 1.0;   // never leave at 0 or bots freeze
 
 		ChangeStatNum(STAT_DEFAULT);
 		

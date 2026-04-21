@@ -657,7 +657,7 @@ class ZTBotController : Actor {
         SetTeam(PickTeam(CVar.FindCVar("teamplay").GetInt() >= 1));
     }
 
-    void PlayPain() {
+    virtual void PlayPain() {
         if (Health > 0)
             BotChat("HURT", 0.7);
     }

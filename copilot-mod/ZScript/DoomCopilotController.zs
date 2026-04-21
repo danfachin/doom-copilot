@@ -170,6 +170,31 @@ class DoomCopilotController : ZTBotController
         else                     possessed.MoveLeft();
     }
 
+    // Flee trigger. ZetaBot never auto-transitions into BS_FLEEING on
+    // low HP — our Subroutine_Flee override only matters once the state
+    // is already fleeing. So on every pain event we check the persona's
+    // flee threshold and kick the state over. Also routes through the
+    // same HP gating as Subroutine_Flee (enemy in sight, within range)
+    // so bots don't flip-flee from a single pop-shot from off-map.
+    override void PlayPain()
+    {
+        Super.PlayPain();
+
+        if (!CanFlee()) return;
+        if (bstate == BS_FLEEING) return;
+        if (possessed == null) return;
+
+        double hpThresh = double(possessed.default.Health) * FleeHpFrac();
+        if (double(possessed.Health) >= hpThresh) return;
+
+        // Only flee from something we can actually see — don't bail
+        // from hitscan that came through a wall.
+        if (!enemy || !possessed.CheckSight(enemy)) return;
+        if (possessed.Distance3D(enemy) > FleeEnemyDist()) return;
+
+        ConsiderSetBotState(BS_FLEEING);
+    }
+
     // Log state transitions at dc_debug >= 1. Only fires on real
     // changes (s != bstate), matching where ZetaBot would DebugLog.
     override void SetBotState(uint s)
@@ -229,13 +254,16 @@ class DoomCopilotController : ZTBotController
     }
 
     // Apply persona speed clamp. Called from DC_BotSpawner right after
-    // the controller is spawned. Safe against null/non-pawn possessed.
+    // the controller is spawned. Binds to ZetaBotPawn.speedMod, which is
+    // the scalar actually consulted by BotThrust() — setting pawn.Speed
+    // is a no-op since RealMoveForward/Right/Left/Backward use hard-
+    // coded thrust values.
     void ApplyMovementProfile()
     {
         if (possessed == null) return;
-        double baseSpeed = GetDefaultByType(possessed.GetClass()).Speed;
-        if (baseSpeed > 0)
-            possessed.Speed = baseSpeed * MoveSpeedMult();
+        let zbp = ZetaBotPawn(possessed);
+        if (zbp == null) return;
+        zbp.speedMod = MoveSpeedMult();
     }
 
     // Hand the persona their loadout. Infinite-ammo sidearm via a

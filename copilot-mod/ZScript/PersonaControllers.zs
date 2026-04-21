@@ -30,9 +30,11 @@ class DC_SharpshooterController : DoomCopilotController
     override double AimScatterMult()   { return 0.3; }
     override double TurnSpeedMult()    { return 1.4; }
 
-    // Slow and grounded — marksmen don't juke.
-    override double MoveSpeedMult()    { return 0.65; }
-    override double StrafeDamping()    { return 0.3; }
+    // Slow and grounded — marksmen don't juke. Cut further from 0.65/0.3
+    // after 2026-04-20 playtest showed the squad zipping across the
+    // Pilot's firing arcs and getting clipped by friendly fire.
+    override double MoveSpeedMult()    { return 0.50; }
+    override double StrafeDamping()    { return 0.15; }
 
     // DMR + pump shotgun (effectively slug-role at mid range) + revolver.
     override string PrimaryClass1()    { return "PB_DMR"; }
@@ -61,8 +63,9 @@ class DC_BrawlerController : DoomCopilotController
     override double TurnSpeedMult()    { return 1.2; }
 
     // Moderate speed, mid damping — advances purposefully, minor weave.
-    override double MoveSpeedMult()    { return 0.85; }
-    override double StrafeDamping()    { return 0.5; }
+    // Trimmed from 0.85/0.5 after 2026-04-20 playtest.
+    override double MoveSpeedMult()    { return 0.65; }
+    override double StrafeDamping()    { return 0.30; }
 
     // Flamer (primary close-in) + SSG (secondary burst) + fire axe.
     override string PrimaryClass1()    { return "PB_Flamethrower"; }
@@ -91,8 +94,9 @@ class DC_TankController : DoomCopilotController
     override double TurnSpeedMult()    { return 1.0; }
 
     // Heaviest, slowest, least strafe — owns the ground.
-    override double MoveSpeedMult()    { return 0.6; }
-    override double StrafeDamping()    { return 0.25; }
+    // Trimmed from 0.6/0.25 after 2026-04-20 playtest.
+    override double MoveSpeedMult()    { return 0.45; }
+    override double StrafeDamping()    { return 0.12; }
 
     // Minigun + rocket launcher + SMG sidearm.
     override string PrimaryClass1()    { return "PB_Minigun"; }
@@ -122,8 +126,10 @@ class DC_DeathwishController : DoomCopilotController
     override double TurnSpeedMult()    { return 1.8; }
 
     // Full speed, near-full twitch — the chaos variable.
-    override double MoveSpeedMult()    { return 1.0; }
-    override double StrafeDamping()    { return 0.8; }
+    // Slight trim from 1.0/0.8 so even Death-Wish reads as "berserk"
+    // rather than "bunny-hopping" after the 2026-04-20 tuning pass.
+    override double MoveSpeedMult()    { return 0.90; }
+    override double StrafeDamping()    { return 0.70; }
 
     // Plasma rifle + rocket launcher + chainsaw sidearm.
     override string PrimaryClass1()    { return "PB_M1Plasma"; }
