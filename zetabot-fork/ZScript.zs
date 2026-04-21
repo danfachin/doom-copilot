@@ -2692,15 +2692,27 @@ class ZTBotController : Actor {
         return true;
     }
 
+    // DoomCopilot fix 2026-04-20: the `depth` param existed but was
+    // never incremented, and the only cycle check (potentialCommander
+    // == nextCommander) catches self-loops but NOT longer rings. A
+    // 3-bot ring A→B→C→A walks forever. Commands() is called from
+    // RefreshCommander every tick, which turned any transient ring
+    // into a hard game hang (observed 2026-04-20 sessions at
+    // 21:57 and 22:04). Hard depth cap added as belt-and-suspenders
+    // against any commander ring of any shape.
     bool Commands(Actor another, int depth = 0) {
+        if (depth > 16) {
+            return false;
+        }
+
         if (!another) {
             return false;
         }
-        
+
         if (another == possessed) {
             return true;
         }
-        
+
         ZetaBotPawn zbp = ZetaBotPawn(another);
 
         if (zbp == null || zbp.cont == null) {
@@ -2713,7 +2725,12 @@ class ZTBotController : Actor {
 
         ZetaBotPawn potentialCommander = ZetaBotPawn(zbp.cont.commander);
 
+        int walk = 0;
         while (potentialCommander != null) {
+            if (++walk > 16) {
+                return false;
+            }
+
             if (potentialCommander == possessed) {
                 return true;
             }
