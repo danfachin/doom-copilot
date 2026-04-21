@@ -40,6 +40,14 @@ class DoomCopilotController : ZTBotController
     // compute tic_alive on death.
     int spawnTic;
 
+    // Cooldown for ShouldFollow after a FOLLOWING→WANDERING flip.
+    // PathMoveTo(commander) failures in Subroutine_Follow kick us back
+    // to Wander, and without this the next tic's ShouldFollow flips us
+    // straight back — 48 same-tic state_changes seen in logs before
+    // this fix. One-second hold lets the bot drift to a new nav node
+    // and break the thrash loop.
+    int followFailUntilTic;
+
     // ── Follow behavior ────────────────────────────────────────
 
     // Start following if distance to commander exceeds this.
@@ -108,6 +116,7 @@ class DoomCopilotController : ZTBotController
     override bool ShouldFollow(Actor who)
     {
         if (!who) return false;
+        if (level.time < followFailUntilTic) return false;
 
         double d = possessed.Distance3D(who);
         if (d > FollowMin()) return true;
@@ -245,6 +254,11 @@ class DoomCopilotController : ZTBotController
     // changes (s != bstate), matching where ZetaBot would DebugLog.
     override void SetBotState(uint s)
     {
+        // Pathing to commander failed — arm a 1s follow cooldown so
+        // ShouldFollow doesn't immediately flip us back to FOLLOWING.
+        if (bstate == BS_FOLLOWING && s == BS_WANDERING)
+            followFailUntilTic = level.time + 35;
+
         if (s != bstate && DC_DebugHandler.DebugLevel() >= 1 && possessed)
         {
             string enemyName = "none";
