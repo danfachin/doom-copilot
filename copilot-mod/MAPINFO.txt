@@ -4,5 +4,5 @@
 
 gameinfo
 {
-    AddEventHandlers = "DC_AutoSpawnHandler"
+    AddEventHandlers = "DC_AutoSpawnHandler", "DC_DebugHandler"
 }

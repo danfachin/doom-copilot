@@ -6,3 +6,12 @@
 //   Leave at 0 for manual summoning via F5/F6/F7/F8/F9 keybinds.
 
 user bool dc_autospawn_squad = false;
+
+// dc_debug — squad telemetry level.
+//   0 = off (default)
+//   1 = spawn, state transitions, damage, deaths (event-driven)
+//   2 = +bot_tick at 2 Hz per live bot (per-persona state/pos/enemy)
+// All events write `[DC]` JSON lines to the GZDoom console; the launcher
+// redirects console output to the logfile so they live alongside
+// hearth-logger's `[HL]` events. Grep the logfile post-run.
+user int dc_debug = 0;

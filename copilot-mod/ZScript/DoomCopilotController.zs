@@ -33,6 +33,13 @@ class DoomCopilotController : ZTBotController
 
     virtual string PersonaName()       { return "Generic"; }
 
+    // ── Telemetry state ────────────────────────────────────────
+    //
+    // spawnTic is set once in GiveLoadout (which runs right after the
+    // possessed pawn is confirmed live). DC_DebugHandler uses it to
+    // compute tic_alive on death.
+    int spawnTic;
+
     // ── Follow behavior ────────────────────────────────────────
 
     // Start following if distance to commander exceeds this.
@@ -163,6 +170,64 @@ class DoomCopilotController : ZTBotController
         else                     possessed.MoveLeft();
     }
 
+    // Log state transitions at dc_debug >= 1. Only fires on real
+    // changes (s != bstate), matching where ZetaBot would DebugLog.
+    override void SetBotState(uint s)
+    {
+        if (s != bstate && DC_DebugHandler.DebugLevel() >= 1 && possessed)
+        {
+            string enemyName = "none";
+            double enemyDist = -1;
+            if (enemy)
+            {
+                enemyName = enemy.GetClassName();
+                enemyDist = possessed.Distance3D(enemy);
+            }
+            double cmdDist = commander ? possessed.Distance3D(commander) : -1;
+
+            console.printf("[DC]{\"t\":\"state_change\",\"tic\":%d,"
+                .."\"persona\":\"%s\",\"from\":\"%s\",\"to\":\"%s\","
+                .."\"hp\":%d,\"dist_cmd\":%.0f,"
+                .."\"enemy\":\"%s\",\"dist_enemy\":%.0f}",
+                level.time, PersonaName(),
+                BStateNames[bstate], BStateNames[s],
+                possessed.health, cmdDist, enemyName, enemyDist);
+        }
+        Super.SetBotState(s);
+    }
+
+    // Called from DC_DebugHandler.WorldTick at 2 Hz when dc_debug >= 2.
+    void EmitTickLog()
+    {
+        if (!possessed) return;
+        string enemyName = "none";
+        double enemyDist = -1;
+        if (enemy)
+        {
+            enemyName = enemy.GetClassName();
+            enemyDist = possessed.Distance3D(enemy);
+        }
+        double cmdDist = commander ? possessed.Distance3D(commander) : -1;
+        string weapName = "none";
+        let pp = PlayerPawn(possessed);
+        if (pp && pp.player && pp.player.ReadyWeapon)
+            weapName = pp.player.ReadyWeapon.GetClassName();
+
+        console.printf("[DC]{\"t\":\"bot_tick\",\"tic\":%d,"
+            .."\"persona\":\"%s\",\"hp\":%d,"
+            .."\"px\":%.0f,\"py\":%.0f,\"state\":\"%s\","
+            .."\"dist_cmd\":%.0f,\"enemy\":\"%s\",\"dist_enemy\":%.0f,"
+            .."\"weapon\":\"%s\"}",
+            level.time, PersonaName(), possessed.health,
+            possessed.pos.x, possessed.pos.y, CurrentStateName(),
+            cmdDist, enemyName, enemyDist, weapName);
+    }
+
+    string CurrentStateName()
+    {
+        return BStateNames[bstate];
+    }
+
     // Apply persona speed clamp. Called from DC_BotSpawner right after
     // the controller is spawned. Safe against null/non-pawn possessed.
     void ApplyMovementProfile()
@@ -187,5 +252,25 @@ class DoomCopilotController : ZTBotController
         if (SidearmClass()  != "") possessed.GiveInventory(SidearmClass(),  1);
         if (SidearmAmmoClass() != "")
             possessed.GiveInventory(SidearmAmmoClass(), 9999);
+
+        spawnTic = level.time;
+
+        if (DC_DebugHandler.DebugLevel() >= 1)
+        {
+            console.printf("[DC]{\"t\":\"bot_spawn\",\"tic\":%d,"
+                .."\"persona\":\"%s\",\"hp\":%d,"
+                .."\"px\":%.0f,\"py\":%.0f,"
+                .."\"primary1\":\"%s\",\"primary2\":\"%s\","
+                .."\"sidearm\":\"%s\","
+                .."\"follow_min\":%.0f,\"follow_max\":%.0f,"
+                .."\"flee_hp\":%.2f,\"can_flee\":%d,"
+                .."\"move_mult\":%.2f,\"strafe_damp\":%.2f}",
+                level.time, PersonaName(), possessed.health,
+                possessed.pos.x, possessed.pos.y,
+                PrimaryClass1(), PrimaryClass2(), SidearmClass(),
+                FollowMin(), FollowMax(),
+                FleeHpFrac(), CanFlee() ? 1 : 0,
+                MoveSpeedMult(), StrafeDamping());
+        }
     }
 }

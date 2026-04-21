@@ -1209,7 +1209,7 @@ class ZTBotController : Actor {
         "fleeing"
     };
 
-    void SetBotState(uint s) {
+    virtual void SetBotState(uint s) {
         //if (currentOrder)
         //    SetOrder(null);
 
