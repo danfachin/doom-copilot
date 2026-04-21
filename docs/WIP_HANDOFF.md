@@ -1,145 +1,182 @@
 # WIP Handoff — Four-God Squad build
 
-**Last worked:** 2026-04-20  **Branch:** `four-god-squad`
-**Session:** `CODE-CC-260419-010` (single-day span, closed after this handoff)
+**Last worked:** 2026-04-20  **Branch:** `item9-squad-builder`
+**Session:** `DOOM-CC-260420-002` (closed after this handoff)
 
 ---
 
 ## Current state
 
-Branch sits 16 commits ahead of `master`, all committed cleanly, working
-tree clean. Branch has NOT been merged to master — stays on feature
-branch until Checkpoint 4 passes and full system is validated.
+Branch sits 9 commits ahead of `four-god-squad` (itself 16 ahead of
+`master`). Working tree clean. Branch NOT merged upstream — stays
+feature-isolated until Checkpoint 3 passes and Item 9.5 / Item 10
+are in a landable shape.
+
+**Net tonight:** the squad survives long enough to actually fight.
+Four crash/hang bugs diagnosed and fixed in sequence. Checkpoint 3
+still hasn't cleanly passed, but the telemetry is now reliable
+enough to debug from.
 
 ### What's live and playable right now
 
-Run **[launch/squad_deploy.bat](../launch/squad_deploy.bat)** — full stack:
-PB3 + Maps of Chaos + hearth-logger + zetabot-fork + hearth-silencer +
-copilot-mod. On MAP01 Nightmare, auto-deploys 3 bots (Sharpshooter /
-Tank / Brawler) around the Pilot position 1 second after map load.
-Hearth-logger captures telemetry. Hearth-silencer kills PB3's HUD spam.
-Bots now recognize PB3 weapons and fire them via `zb_wtypes`-registered
-`ZetaPB3Weapons` module.
+`launch/squad_deploy.bat` still deploys the 3-bot squad (Sharpshooter
+/ Tank / Brawler) 1 second after MAP01 loads. With tonight's fixes,
+survivability is radically improved from the prior session (20s TTL
+→ 30+s with bots making kills, Pilot surviving the first room).
 
-### Completed roadmap items (10 of 13)
+### Roadmap status
 
 | # | Item | Status |
 |---|------|--------|
-| 1 | Commit WIP (logger + process_logs + brain harness + annotator) | ✅ |
-| 2 | Hearth Silencer PK3 (PB3 HUD message fix) | ✅ |
-| 3 | ZetaBot fork at zetabot-fork/ | ✅ **Checkpoint 1 passed** |
-| 4 | DoomCopilotController + 4 persona profiles + auto-spawner | ✅ |
-| 5 | doom-launcher Squad Deploy preset | ✅ **Checkpoint 2 passed** |
-| 6 | ~~VGS audio callouts~~ | SKIPPED (user choice — late-stage polish) |
-| 7 | PB3 weapon module (11 classes covering top-12 weapons) | ✅ |
-| 8 | Calibration script (telemetry → persona dials) | ✅ |
-| — | **Checkpoint 3 — PB3 weapon intelligence playtest** | ⏳ **PENDING** |
-| 9 | In-game MENUDEF Squad Deploy menu | — Not started |
-| 10 | Claude bridge (gated behind ANTHROPIC_API_KEY) | — Not started |
-| — | Checkpoint 4 — full system playtest | — Not reached |
-| 11 | ~~Persona voices~~ | SKIPPED |
+| 1–8 | All prior infra | ✅ (unchanged from prior handoff) |
+| — | Checkpoint 3 | ⏳ **still pending a clean pass** |
+| 9 | In-game MENUDEF Squad Deploy menu | — not started; tonight's work was Item 9's *loadouts + movement*, not the menu itself |
+| 10 | Claude bridge (gated on `ANTHROPIC_API_KEY`) | — not started |
+| — | Checkpoint 4 | — not reached |
+
+### What tonight actually shipped
+
+New commits on `item9-squad-builder`:
+
+- `65883eb` — Item 9 infra: RPG loadouts (2 primaries + infinite-ammo
+  sidearm per persona) + Warhammer-walk movement knobs + safe-spawn
+  ring probe.
+- `2e24cef` — Item 9 compile fix: `GetClassName()` migration for
+  UZDoom 4.14.3 strictness + JIT workaround (inline ring probe,
+  explicit `Class<Actor>` local to avoid string→class implicit
+  conversion).
+- `5eedab4` — `[DC]` telemetry event stream (bot_spawn, state_change,
+  bot_hurt, bot_death, bot_tick). Gated by `dc_debug` CVar. Emits
+  structured JSON to same logfile as hearth-logger's `[HL]` lines.
+- `00c09cb` — Survival pass: FF bug (ZetaBullet species was
+  "ZetaBot" vs pawn's "ZetaBotGuy" — broke `+THRUSPECIES`); real
+  speed clamp (movement profile now binds `ZetaBotPawn.speedMod`,
+  not the ignored `Speed` field); pain-flee transition (PlayPain
+  override consults persona flee threshold).
+- `635863f` — FF-block at `ZetaBotPawn.DamageMobj` catching
+  splash/rocket/plasma from squadmates AND Pilot; persona engagement
+  envelopes override hardcoded 256/128 standoff.
+- `462ab59` — `PickCommander` override prefers live console player
+  over squadmates (bots were commandering each other in a ring);
+  `DC_SpawnProbe` +SOLID without +NOBLOCKMAP so TestMobjLocation
+  actually sees wall/thing overlap.
+- `1d49ac5` — Compile fix: cast both sides to `Actor` for
+  `pmo == possessed` check (ZetaBotPawn vs PlayerPawn are sibling
+  types, ZScript rejects `==` between them).
+- `529a461` — `PickCommander` returns cleanly when no Pilot found
+  rather than falling through to vanilla Super (vanilla's random
+  squadmate pick could form a 3-bot command ring). Added
+  `[DC]pilot_death` marker.
+- `bdda366` — **Hard-cap on `Commands()` chain walk (depth=16).**
+  Root-cause fix for the final hang. Vanilla's cycle detector only
+  caught self-reference (A→A); a 3-bot ring (A→B→C→A) looped
+  forever through `RefreshCommander` every tick. The existing
+  `depth` parameter was declared but never incremented — dead code.
 
 ---
 
 ## Picking back up — what next session does
 
-### 1. Run Checkpoint 3 first
+### 1. Re-run Checkpoint 3
 
-Double-click `launch/squad_deploy.bat`. Expected at startup:
-- Compile clean (no red ZScript errors)
-- Console: `Doom Copilot: registered PB_PlayerPrawn anchor in zb_btypes`
-- Console: `Doom Copilot: registered PB3 weapon module in zb_wtypes`
-- 1 second after MAP01 loads: 3 bots spawn
+Same `squad_deploy.bat`. With the `Commands()` ring-cycle fixed,
+the expected failure modes are now:
+- Bots dying to real enemies (fine — means FF block works)
+- Bots getting stuck geometrically when Pilot moves far (Brawler
+  telemetry in session_20260420_220423.log hit a `dist_cmd` of 626
+  before disengaging)
+- One persona still spawns in wall occasionally (user reported
+  after the +NOBLOCKMAP→+SOLID probe fix — **needs verification on
+  next playtest**)
 
-During combat, watch for:
-- Bots picking up PB3 weapons (not stuck on pistol)
-- Range-appropriate weapon choice (shotgun close, DMR mid, BFG on heavies)
-- No rocket-suicide (<160u triggers RateSelf = -100)
-- `data/session_*.log` capturing `{"t":"kill","killer":"ZetaDoom"}` events
+Full pass criteria: **[CHECKPOINTS.md § 3](CHECKPOINTS.md)**.
 
-Full pass criteria + failure modes: **[CHECKPOINTS.md § 3](CHECKPOINTS.md)**.
+### 2. Session log locations
 
-### 2. Then resume: items 9, 10, Checkpoint 4
+`data/session_20260420_*.log`. Grep for `[DC]` for squad events,
+`[HL]` for Pilot / world events. Latest two (`215736`, `220423`)
+both end mid-tic from the hang — the last `[DC]state_change` line
+is the final useful signal, not the `tail`.
 
-- **Item 9** (M effort): In-game MENUDEF at main menu for runtime squad
-  configuration — persona per slot, map/skill pickers, "Deploy Squad"
-  button. Writes to CVars the auto-spawner already reads.
-- **Item 10** (M effort): Claude bridge — Python sidecar tailing the
-  hearth-logger logfile, calling Claude for tactical callouts, writing
-  commands to a bridge CVar that an EventHandler polls. **Gated
-  behind `ANTHROPIC_API_KEY` — if env var absent, code path is dead
-  (rule engine continues unaffected).** Dan doesn't have an API key
-  yet; he runs strategic stuff through Claude Code manually.
-- **Checkpoint 4**: full-system playtest, then merge `four-god-squad`
-  into `master`.
+### 3. Then resume planned item 9.5 + 10
+
+- **Item 9.5 (new)**: altfire support. Persona loadouts declare
+  primaries but don't currently wire up alt-fire. Deferred from
+  tonight to keep the scope tight while hunting crashes.
+- **Item 9 menu**: MENUDEF squad-builder — the original Item 9
+  scope, never reached tonight. CVars exist; needs the UI layer.
+- **Item 10**: Claude bridge — unchanged from prior handoff.
 
 ---
 
-## Known issues / smells to keep an eye on
+## Known issues / smells
 
-- **Flank convention bug** flagged in Hearth `system_feedback`: the
-  rule-based VGS engine's left/right filters may be inverted vs. the
-  logger's angle convention. Not fixed — Dan to pick direction. See
-  `brain/vgs_engine.py` lines 353–368 vs. `render_state_for_prompt`
-  in `brain/claude_brain.py`.
-- **ZetaBot's `zb_btypes` / `zb_wtypes` writes** are injected at
-  `OnRegister` from `DC_AutoSpawnHandler`. Both are `server` CVars;
-  writes work in single-player but may need revisiting if/when we
-  ever test in real co-op multiplayer.
-- **ZetaBot bots are `+ISMONSTER +FRIENDLY`**, not real PlayerPawns.
-  Per the ZetaBot assessment doc, the cleaner long-term is switching
-  the pawn base class to `PlayerPawn` so bots appear as "the fourth
-  operator" in scoreboard and don't inflate PB3's kill count. Deferred.
-- **Calibration suggests Dan survives combat more cautiously than
-  my hand-tuned defaults assumed.** Flee thresholds: my tuning had
-  tank=50%, calibration says 78%. Dan can hand-apply from
-  `brain/calibrated.md` if playtest shows bots dying too aggressively.
-- **Fire() in PB3Weapons.zs uses synthetic hitscan** (ZetaBullet) not
-  PB3's real weapon animations. Good enough for bot damage but means
-  bot muzzle flashes and recoil don't play. Not a blocker.
+- **Brawler HP-20 plateau** in session_20260420_220423.log: stuck
+  at 20 HP for 270+ tics while flipping attacking/wandering without
+  taking damage or making progress. Possibly a pathing wedge or a
+  "can see enemy, can't reach enemy" oscillation. Not a crash but
+  worth watching on next run.
+- **Debug-level CVar** `dc_debug=1` is set in the squad_deploy
+  preset. Telemetry is valuable right now. Drop to 0 before
+  Checkpoint 4 merge — otherwise every session log is 500+ `[DC]`
+  lines.
+- **`ZetaBot` upstream bugs we've patched locally** (for future
+  upstream PR if the author is receptive):
+  - `Commands()` cycle detector only catches self-loops (2695).
+    Fix: depth cap. Our change is marked with a comment block.
+  - `ShouldFollow`, `Subroutine_Flee`, `RefreshSkills`,
+    `SetBotState`, `PlayPain`, `PickCommander` were all
+    non-`virtual` despite being override-shaped. Now virtual in
+    our fork.
+  - `ZetaBullet.Species` was `"ZetaBot"` but `ZetaBotPawn.Species`
+    is `"ZetaBotGuy"` — `+THRUSPECIES` relies on exact string
+    match, so bots shot each other through this typo.
+- **`MoveSpeedMult` persona dial was a no-op until tonight.**
+  `RealMoveForward` uses hardcoded thrust values; `Speed` actor
+  field is ignored. The real lever is `ZetaBotPawn.speedMod` which
+  was a `const 1` in the upstream fork. Now a writable `double`
+  and `ApplyMovementProfile` binds to it.
+- Carries forward from prior handoff: flank bug in VGS engine
+  (`system_feedback` ticket), `zb_btypes`/`zb_wtypes` server-CVar
+  concerns for real co-op, PlayerPawn base-class switch deferred,
+  calibration `brain/calibrated.md` not yet applied to persona
+  dials.
 
-## File inventory — what each new piece does
+## File inventory — new or materially changed this session
+
+Only diffs from prior handoff are listed; everything else stands.
 
 ```
-doom-copilot/
-├── docs/
-│   ├── CHECKPOINTS.md            # playtest gate instructions 1-4
-│   └── WIP_HANDOFF.md            # this file
-├── launch/
-│   ├── checkpoint1_isolated.bat  # vanilla Doom + ZetaBot sanity
-│   ├── checkpoint1_integration.bat # full stack, 1 bot summon
-│   └── squad_deploy.bat          # production Squad Deploy wrapper
-├── hearth-silencer/              # PK3 dir — subclasses PB_Hud_ZS
-│   ├── ZSCRIPT.zs                #   Hearth_SilentHud class
-│   └── MAPINFO.txt               #   StatusBarClass swap
-├── logger/
-│   ├── hearth-logger/ZSCRIPT.zs  # extended: 9Hz actions, weapon_switch
-│   └── process_logs.py           # DATA_DIR fix, regenerated sessions
-├── brain/
-│   ├── claude_brain.py           # prompt harness (dry-run works, live needs key)
-│   ├── vgs_annotator.py          # terminal TUI for manual labeling
-│   ├── calibrate_personas.py     # telemetry → dial suggestions
-│   ├── calibrated.json/.md       # current generated calibration
-│   └── vgs_engine.py             # rule-based engine (pre-existing, unchanged)
-├── zetabot-fork/                 # vendored ZetaBot + 3 patches:
-│   ├── ZScript.zs                #   line 1113 null-guard, possessed guard
-│   │                             #   + virtual on ShouldFollow/Subroutine_Flee/RefreshSkills
-│   └── CVarInfo.txt              #   zb_btypes now includes PB_PlayerPrawn
-└── copilot-mod/                  # our persona system
-    ├── ZSCRIPT.zs                #   include manifest
-    ├── MAPINFO.txt               #   registers DC_AutoSpawnHandler
-    ├── KeyConf.txt               #   F5-F9 keybinds + F12 disband
-    ├── CVARINFO.txt              #   dc_autospawn_squad CVar
-    └── ZScript/
-        ├── DoomCopilotController.zs   # base w/ virtual hooks
-        ├── PersonaControllers.zs      # 4 persona subclasses
-        ├── Spawners.zs                # 4 summonable spawners
-        ├── AutoSpawner.zs             # EventHandler + zb_btypes/zb_wtypes injection
-        └── WeaponModule/
-            ├── PB3Weapons.zs          # 11 ZetaWeapon subclasses
-            └── ZetaPB3Weapons.zs      # registering module
+copilot-mod/
+├── ZScript/
+│   ├── DoomCopilotController.zs   # new virtual hooks
+│   │                              #   EngagementCloseRange/BackoffRange
+│   │                              #   PickCommander override (prefer Pilot, no Super fallback)
+│   │                              #   PlayPain flee trigger
+│   │                              #   SetBotState telemetry
+│   │                              #   spawnTic + [DC]bot_spawn emit
+│   ├── PersonaControllers.zs      # new: engagement envelopes per persona,
+│   │                              #      MoveSpeedMult/StrafeDamping cut,
+│   │                              #      loadout fields (PrimaryClass1/2, Sidearm)
+│   ├── AutoSpawner.zs             # safe-spawn ring probe, DC_SpawnProbe
+│   │                              #   (+SOLID, no +NOBLOCKMAP)
+│   ├── DC_Debug.zs                # NEW — [DC] event handler, dc_debug gate
+│   └── WeaponModule/PB3Weapons.zs # GetClassName() migration
+├── CVARINFO.txt                   # + dc_debug
+├── MAPINFO.txt                    # + DC_DebugHandler event handler
+└── ZSCRIPT.zs                     # + DC_Debug.zs include
+
+zetabot-fork/
+├── ZScript.zs                     # virtual keywords added on 6 methods;
+│                                  # Commands() depth cap (ring-hang fix);
+│                                  # Subroutine_Attack now calls
+│                                  #   EngagementCloseRange()/BackoffRange()
+│                                  #   instead of hardcoded 256/128
+└── ZetaCode/
+    ├── PawnClasses/ZetaBotPawn.zs # speedMod now writable double;
+    │                              # DamageMobj override (FF zero-damage)
+    └── WeaponSupport/ZetaBullet.zs # Species "ZetaBot" → "ZetaBotGuy"
 ```
 
-Also edited (outside repo):
-- `D:\Users\Dan\dev\doom-launcher\catalog.json` — 3 new mod entries +
-  `squad_deploy` profile (no git tracking on launcher side).
+Launcher side (outside repo): `doom-launcher/catalog.json`
+`squad_deploy.extra_args` now includes `+set dc_debug 1`.
