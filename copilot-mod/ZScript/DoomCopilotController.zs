@@ -197,7 +197,7 @@ class DoomCopilotController : ZTBotController
             if (!playeringame[i]) continue;
             let pmo = players[i].mo;
             if (!pmo || pmo.health <= 0) continue;
-            if (pmo == possessed) continue;   // don't self-commander if our pawn has a player slot
+            if (Actor(pmo) == Actor(possessed)) continue;   // don't self-commander if our pawn has a player slot
 
             if (SetCommander(pmo))
             {
