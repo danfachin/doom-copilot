@@ -185,12 +185,19 @@ class DoomCopilotController : ZTBotController
     // and commander each other in a ring. Telemetry showed dist_cmd
     // pinned at 136 (squadmate distance) instead of growing with the
     // Pilot's movement (session_20260420_214156.log). Fix: walk the
-    // player list, attach to the first live console player in sight;
-    // fall back to Super only if the Pilot is unreachable.
+    // player list, attach to the first live console player.
+    //
+    // When the Pilot is down we deliberately DO NOT fall through to
+    // Super.PickCommander. Vanilla's cycle detector only catches
+    // self-reference (A→A); a 3-bot ring (A→B→C→A) would infinite-
+    // loop through Commands() and hang the game. Crash on Pilot
+    // death (2026-04-20 21:57 session) matched this signature. With
+    // no Pilot, we leave commander null — the bot will wander/fight
+    // under its own state machine, which is the desired behavior.
     override void PickCommander()
     {
         if (commander != null) return;
-        if (possessed == null) { Super.PickCommander(); return; }
+        if (possessed == null) return;
 
         for (int i = 0; i < MAXPLAYERS; i++)
         {
@@ -205,8 +212,8 @@ class DoomCopilotController : ZTBotController
                 return;
             }
         }
-
-        Super.PickCommander();
+        // No live Pilot — leave commander null rather than risk a
+        // squadmate-ring infinite loop in vanilla Super.PickCommander.
     }
 
     // Flee trigger. ZetaBot never auto-transitions into BS_FLEEING on

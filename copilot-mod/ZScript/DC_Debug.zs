@@ -71,6 +71,15 @@ class DC_DebugHandler : EventHandler
     {
         if (!e.thing) return;
 
+        // Pilot death marker. Paired with the bot side's PickCommander
+        // override: if a crash happens shortly after this line, we
+        // know we're in the Pilot-respawn/commander-null window.
+        if (e.thing.player)
+        {
+            console.printf("[DC]{\"t\":\"pilot_death\",\"tic\":%d}", level.time);
+            return;
+        }
+
         let cont = FindController(e.thing);
         if (!cont) return;
 
