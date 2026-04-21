@@ -175,16 +175,18 @@ class DC_AutoSpawnHandler : EventHandler
 // should track a PB3 player; 16×56 is the vanilla default and is
 // close enough for the spawn-check use (PB3's prawn uses the same
 // defaults). If this ever diverges, size to the largest persona.
+//
+// Must be blockmap-registered (no +NOBLOCKMAP) or TestMobjLocation
+// can't see walls/things — which was letting candidates pass that
+// then wall-clipped the real spawner. +SOLID so line checks fire.
 class DC_SpawnProbe : Actor
 {
     default
     {
-        // PB_PlayerPrawn matches vanilla Doom Marine clearance (16×56);
-        // if PB3 ever subclasses a taller prawn, widen this probe.
         Radius 16;
         Height 56;
         +NOGRAVITY
-        +NOBLOCKMAP
+        +SOLID
     }
     states { Spawn: TNT1 A 1; Stop; }
 }

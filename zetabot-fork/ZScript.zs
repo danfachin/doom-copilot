@@ -2734,7 +2734,7 @@ class ZTBotController : Actor {
         return false;
     }
 
-    void PickCommander() {
+    virtual void PickCommander() {
         if (commander != null) {
             return;
         }

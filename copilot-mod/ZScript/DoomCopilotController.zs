@@ -179,6 +179,36 @@ class DoomCopilotController : ZTBotController
         else                     possessed.MoveLeft();
     }
 
+    // Prefer the Pilot over squadmates as commander. Vanilla
+    // PickCommander picks randomly from VisibleFriends — with three
+    // bots spawning on top of each other, they see each other first
+    // and commander each other in a ring. Telemetry showed dist_cmd
+    // pinned at 136 (squadmate distance) instead of growing with the
+    // Pilot's movement (session_20260420_214156.log). Fix: walk the
+    // player list, attach to the first live console player in sight;
+    // fall back to Super only if the Pilot is unreachable.
+    override void PickCommander()
+    {
+        if (commander != null) return;
+        if (possessed == null) { Super.PickCommander(); return; }
+
+        for (int i = 0; i < MAXPLAYERS; i++)
+        {
+            if (!playeringame[i]) continue;
+            let pmo = players[i].mo;
+            if (!pmo || pmo.health <= 0) continue;
+            if (pmo == possessed) continue;   // don't self-commander if our pawn has a player slot
+
+            if (SetCommander(pmo))
+            {
+                BotChat("COMM", 0.8);
+                return;
+            }
+        }
+
+        Super.PickCommander();
+    }
+
     // Flee trigger. ZetaBot never auto-transitions into BS_FLEEING on
     // low HP — our Subroutine_Flee override only matters once the state
     // is already fleeing. So on every pain event we check the persona's
