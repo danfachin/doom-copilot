@@ -100,40 +100,26 @@ class DC_AutoSpawnHandler : EventHandler
     // positions in a ring at the requested distance; if all fail, halves
     // the distance and retries; last resort is the anchor's own position
     // (guaranteed valid — the Pilot is standing there).
+    //
+    // JIT-safety note: this does the ring probe inline rather than via a
+    // helper with an `out Vector3` param — the latter triggered
+    // "Unknown REGT value passed to EmitPARAM" under UZDoom 4.14.3.
+    // Also lifts the class<> lookup into a local to avoid a string→class
+    // implicit conversion at the call site.
     void SpawnBotNear(Actor anchor, string spawnerClass, double dist, double relAngle)
     {
-        Vector3 spawnPos;
-        if (!FindSafeSpawn(anchor, dist, relAngle, spawnPos))
+        Class<Actor> spawnerCls = spawnerClass;
+        if (spawnerCls == null)
         {
-            // Absolute fallback: on top of the anchor. Push-out resolves
-            // the overlap in the next tic.
-            spawnPos = anchor.pos;
-            console.printf("\c[Orange]Doom Copilot: %s safe-spawn fallback to Pilot position",
-                spawnerClass);
-        }
-
-        // replace param omitted → defaults to NO_REPLACE. Our DC_ spawners
-        // aren't subject to class replacement so this is fine.
-        Actor botSpawner = Actor.Spawn(spawnerClass, spawnPos);
-        if (!botSpawner)
-        {
-            console.printf("\c[Red]Doom Copilot: Spawn(%s) returned null", spawnerClass);
+            console.printf("\c[Red]Doom Copilot: unknown spawner class '%s'", spawnerClass);
             return;
         }
-        botSpawner.angle = anchor.angle;
-    }
 
-    // Try the requested (dist, angle); if the point is outside the level
-    // or would embed a pawn-sized actor in geometry, rotate through 7
-    // other angles at the same distance, then retry the whole ring at
-    // half-distance. Returns true + fills outPos on first candidate that
-    // passes Level.IsPointInLevel + TestMobjLocation; false if every
-    // candidate fails (caller falls back to anchor position).
-    bool FindSafeSpawn(Actor anchor, double dist, double relAngle, out Vector3 outPos)
-    {
+        Vector3 spawnPos = anchor.pos;
+        bool found = false;
+
         static const double RING[] = { 0, 45, -45, 90, -90, 135, -135, 180 };
-
-        for (int pass = 0; pass < 2; pass++)
+        for (int pass = 0; pass < 2 && !found; pass++)
         {
             double passDist = (pass == 0) ? dist : dist * 0.5;
             for (int i = 0; i < 8; i++)
@@ -144,11 +130,27 @@ class DC_AutoSpawnHandler : EventHandler
                 if (!Level.IsPointInLevel(candidate)) continue;
                 if (!PointPassesPawnCheck(candidate))  continue;
 
-                outPos = candidate;
-                return true;
+                spawnPos = candidate;
+                found = true;
+                break;
             }
         }
-        return false;
+
+        if (!found)
+        {
+            // Absolute fallback: on top of the anchor. Push-out resolves
+            // the overlap in the next tic.
+            console.printf("\c[Orange]Doom Copilot: %s safe-spawn fallback to Pilot position",
+                spawnerClass);
+        }
+
+        Actor botSpawner = Actor.Spawn(spawnerCls, spawnPos);
+        if (!botSpawner)
+        {
+            console.printf("\c[Red]Doom Copilot: Spawn(%s) returned null", spawnerClass);
+            return;
+        }
+        botSpawner.angle = anchor.angle;
     }
 
     // Probe whether a PB_PlayerPrawn-sized actor would fit at pos.

@@ -39,9 +39,9 @@ class ZetaPB3Shotgun : ZetaWeapon
 
     override bool IsPickupOf(Weapon other)
     {
-        string cls = other.GetClass();
-        return cls == "PB_Shotgun" || cls == "PB_Autoshotgun"
-            || cls == "PB_SSG"     || cls == "PB_QuadSG";
+        name cls = other.GetClassName();
+        return cls == 'PB_Shotgun' || cls == 'PB_Autoshotgun'
+            || cls == 'PB_SSG'     || cls == 'PB_QuadSG';
     }
 
     override double RateSelf(Actor shooter, Actor target)
@@ -74,8 +74,8 @@ class ZetaPB3Minigun : ZetaWeapon
 
     override bool IsPickupOf(Weapon other)
     {
-        string cls = other.GetClass();
-        return cls == "PB_Minigun" || cls == "PB_MG42";
+        name cls = other.GetClassName();
+        return cls == 'PB_Minigun' || cls == 'PB_MG42';
     }
 
     override double RateSelf(Actor shooter, Actor target)
@@ -106,7 +106,7 @@ class ZetaPB3DMR : ZetaWeapon
 
     override bool IsPickupOf(Weapon other)
     {
-        return other.GetClass() == "PB_DMR";
+        return other.GetClassName() == 'PB_DMR';
     }
 
     override double RateSelf(Actor shooter, Actor target)
@@ -138,8 +138,8 @@ class ZetaPB3Carbine : ZetaWeapon
 
     override bool IsPickupOf(Weapon other)
     {
-        string cls = other.GetClass();
-        return cls == "PB_Carbine" || cls == "PB_LMG" || cls == "PB_ChexRifle";
+        name cls = other.GetClassName();
+        return cls == 'PB_Carbine' || cls == 'PB_LMG' || cls == 'PB_ChexRifle';
     }
 
     override double RateSelf(Actor shooter, Actor target)
@@ -169,9 +169,9 @@ class ZetaPB3Sidearm : ZetaWeapon
 
     override bool IsPickupOf(Weapon other)
     {
-        string cls = other.GetClass();
-        return cls == "PB_Pistol"  || cls == "PB_Revolver" || cls == "PB_Deagle"
-            || cls == "PB_MP40"    || cls == "PB_SMG";
+        name cls = other.GetClassName();
+        return cls == 'PB_Pistol'  || cls == 'PB_Revolver' || cls == 'PB_Deagle'
+            || cls == 'PB_MP40'    || cls == 'PB_SMG';
     }
 
     override double RateSelf(Actor shooter, Actor target)
@@ -202,8 +202,8 @@ class ZetaPB3RocketLauncher : ZetaWeapon
 
     override bool IsPickupOf(Weapon other)
     {
-        string cls = other.GetClass();
-        return cls == "PB_RocketLauncher" || cls == "PB_SuperGL";
+        name cls = other.GetClassName();
+        return cls == 'PB_RocketLauncher' || cls == 'PB_SuperGL';
     }
 
     override double RateSelf(Actor shooter, Actor target)
@@ -238,8 +238,8 @@ class ZetaPB3Flamer : ZetaWeapon
 
     override bool IsPickupOf(Weapon other)
     {
-        string cls = other.GetClass();
-        return cls == "PB_Flamethrower" || cls == "PB_CryoRifle";
+        name cls = other.GetClassName();
+        return cls == 'PB_Flamethrower' || cls == 'PB_CryoRifle';
     }
 
     override double RateSelf(Actor shooter, Actor target)
@@ -272,10 +272,10 @@ class ZetaPB3Plasma : ZetaWeapon
 
     override bool IsPickupOf(Weapon other)
     {
-        string cls = other.GetClass();
-        return cls == "PB_M1Plasma"      || cls == "PB_M2Plasma"
-            || cls == "PB_PulseCannon"   || cls == "PB_DualPulseCannon"
-            || cls == "PB_Demontech"     || cls == "PB_Nailgun";
+        name cls = other.GetClassName();
+        return cls == 'PB_M1Plasma'      || cls == 'PB_M2Plasma'
+            || cls == 'PB_PulseCannon'   || cls == 'PB_DualPulseCannon'
+            || cls == 'PB_Demontech'     || cls == 'PB_Nailgun';
     }
 
     override double RateSelf(Actor shooter, Actor target)
@@ -310,8 +310,8 @@ class ZetaPB3BFG : ZetaWeapon
 
     override bool IsPickupOf(Weapon other)
     {
-        string cls = other.GetClass();
-        return cls == "PB_BFG9000" || cls == "PB_Railgun" || cls == "PB_Unmaker";
+        name cls = other.GetClassName();
+        return cls == 'PB_BFG9000' || cls == 'PB_Railgun' || cls == 'PB_Unmaker';
     }
 
     override double RateSelf(Actor shooter, Actor target)
@@ -343,8 +343,8 @@ class ZetaPB3Chainsaw : ZetaWeapon
 
     override bool IsPickupOf(Weapon other)
     {
-        string cls = other.GetClass();
-        return cls == "PB_Chainsaw" || cls == "PB_Axe";
+        name cls = other.GetClassName();
+        return cls == 'PB_Chainsaw' || cls == 'PB_Axe';
     }
 
     override double RateSelf(Actor shooter, Actor target)
@@ -375,7 +375,7 @@ class ZetaPB3Fists : ZetaWeapon
 
     override bool IsPickupOf(Weapon other)
     {
-        return other.GetClass() == "PB_Fists";
+        return other.GetClassName() == 'PB_Fists';
     }
 
     override double RateSelf(Actor shooter, Actor target)
