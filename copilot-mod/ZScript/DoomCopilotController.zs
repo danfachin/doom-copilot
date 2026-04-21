@@ -64,6 +64,15 @@ class DoomCopilotController : ZTBotController
     // Multiplier on zb_turnspeed (CVar). Higher = faster target lock.
     virtual double TurnSpeedMult()     { return 1.0; }
 
+    // Engagement envelope — the per-persona replacement for ZetaBot's
+    // hardcoded 128-256u window. Sharpshooter holds at DMR range,
+    // Brawler closes to point-blank, Tank plants at midfield. Bots
+    // advance while beyond Close, backpedal inside Backoff, plant
+    // and shoot in between. Keep Close > Backoff + pawn radius or
+    // the bot oscillates between the two bands.
+    override double EngagementCloseRange()   { return 256.0; }
+    override double EngagementBackoffRange() { return 128.0; }
+
     // ── Movement feel (Item 9) ─────────────────────────────────
 
     // Multiplier on the possessed pawn's default Speed. <1.0 = slower,

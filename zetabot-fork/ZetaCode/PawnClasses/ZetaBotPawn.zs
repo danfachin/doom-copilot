@@ -323,4 +323,27 @@ class ZetaBotPawn : Actor {
 		Super.Tick();
 		bMoved = false;
 	}
+
+	// Friendly-fire block. Squadmates have the same Species (ZetaBotGuy)
+	// and the Pilot is a PlayerPawn that does not share species. Zero
+	// damage from both so the squad can't fragment itself on rocket
+	// splash, plasma, or the Pilot's line-of-fire.
+	//
+	// We drop to zero rather than return 0, because GZDoom reserves -1
+	// for "cancel damage entirely" and that path also skips pain/push
+	// effects. Zero = "no HP loss but the pain state can still play" —
+	// visually honest (you see the splash) but non-lethal.
+	override int DamageMobj(Actor inflictor, Actor source, int damage, Name mod, int flags = 0, double angle = 0)
+	{
+		if (source && source != self)
+		{
+			if (source is "ZetaBotPawn")
+				return Super.DamageMobj(inflictor, source, 0, mod, flags, angle);
+
+			let pp = PlayerPawn(source);
+			if (pp && pp.player)
+				return Super.DamageMobj(inflictor, source, 0, mod, flags, angle);
+		}
+		return Super.DamageMobj(inflictor, source, damage, mod, flags, angle);
+	}
 }

@@ -30,6 +30,11 @@ class DC_SharpshooterController : DoomCopilotController
     override double AimScatterMult()   { return 0.3; }
     override double TurnSpeedMult()    { return 1.4; }
 
+    // Marksman standoff: plant between ~640 and ~1024. Well outside
+    // the Pilot's SSG / shotgun cone, inside the DMR's sweet spot.
+    override double EngagementCloseRange()   { return 1024.0; }
+    override double EngagementBackoffRange() { return  640.0; }
+
     // Slow and grounded — marksmen don't juke. Cut further from 0.65/0.3
     // after 2026-04-20 playtest showed the squad zipping across the
     // Pilot's firing arcs and getting clipped by friendly fire.
@@ -62,6 +67,10 @@ class DC_BrawlerController : DoomCopilotController
     override double AimScatterMult()   { return 0.9; }
     override double TurnSpeedMult()    { return 1.2; }
 
+    // Closes aggressively for flamer/SSG range. Plants between 96-192.
+    override double EngagementCloseRange()   { return 192.0; }
+    override double EngagementBackoffRange() { return  96.0; }
+
     // Moderate speed, mid damping — advances purposefully, minor weave.
     // Trimmed from 0.85/0.5 after 2026-04-20 playtest.
     override double MoveSpeedMult()    { return 0.65; }
@@ -92,6 +101,12 @@ class DC_TankController : DoomCopilotController
     // Medium aim, moderate turn (holds ground).
     override double AimScatterMult()   { return 0.8; }
     override double TurnSpeedMult()    { return 1.0; }
+
+    // Midfield anchor: 320-512u. Keeps minigun/rocket useful without
+    // eating the Pilot's point-blank shots. Rockets self-guard via
+    // the <160u RateSelf penalty so they won't splash the Tank itself.
+    override double EngagementCloseRange()   { return 512.0; }
+    override double EngagementBackoffRange() { return 320.0; }
 
     // Heaviest, slowest, least strafe — owns the ground.
     // Trimmed from 0.6/0.25 after 2026-04-20 playtest.
@@ -124,6 +139,12 @@ class DC_DeathwishController : DoomCopilotController
     // Spray-and-pray precision, maximum turn speed.
     override double AimScatterMult()   { return 1.8; }
     override double TurnSpeedMult()    { return 1.8; }
+
+    // Always closing. Tiny standoff so they keep rushing monsters but
+    // still have a bare-minimum back-off at point-blank so they don't
+    // rocket-splash themselves.
+    override double EngagementCloseRange()   { return 128.0; }
+    override double EngagementBackoffRange() {  return 64.0; }
 
     // Full speed, near-full twitch — the chaos variable.
     // Slight trim from 1.0/0.8 so even Death-Wish reads as "berserk"

@@ -2415,6 +2415,14 @@ class ZTBotController : Actor {
         }
     }
 
+    // Persona-overridable engagement envelope. Close toward the enemy
+    // while beyond EngagementCloseRange; back off if inside
+    // EngagementBackoffRange; otherwise plant and shoot. Vanilla
+    // ZetaBot behavior (hardcoded 128-256u) preserved via these
+    // defaults — DoomCopilotController overrides per persona.
+    virtual double EngagementCloseRange()   { return 256.0; }
+    virtual double EngagementBackoffRange() { return 128.0; }
+
     virtual void Subroutine_Flee() {
         if (DodgeAndUse()) {
             if (currNode)
@@ -2496,7 +2504,7 @@ class ZTBotController : Actor {
             return;
         }
 
-        if (possessed.Distance3D(enemy) > 256 + enemy.radius || w.IsMelee()) {
+        if (possessed.Distance3D(enemy) > EngagementCloseRange() + enemy.radius || w.IsMelee()) {
             MoveToward(enemy, 35);
 
             if (enemy.bShadow || enemy.CheckInventory("PowerInvisibility", 1)) {
@@ -2504,7 +2512,7 @@ class ZTBotController : Actor {
             }
         }
 
-        else if (possessed.Distance3D(enemy) < 128 + enemy.radius) {
+        else if (possessed.Distance3D(enemy) < EngagementBackoffRange() + enemy.radius) {
             StepBackFrom(enemy);
         }
 
