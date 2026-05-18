@@ -78,17 +78,25 @@ visibly distinct in their early behavior.
 
 ### Launch
 
-Double-click **[launch/squad_deploy.bat](../launch/squad_deploy.bat)**,
-or from a terminal:
+The squad is now an overlay toggle in the doom-launcher GUI
+(`C:\Games\DOOM\launcher\doom_launcher.py`). To deploy:
 
-```
-cd D:\Users\Dan\dev\doom-launcher
-py -3 doom_launcher.py --profile squad_deploy
-```
+1. Open the launcher (any shortcut, or `py -3 doom_launcher.py` from the
+   launcher dir).
+2. In the **Library** tab toolbar, flip the **Four-God Squad** switch ON.
+   The status bar at the bottom confirms `★ Four-God Squad ON`.
+3. Pick any Library card (Maps of Chaos for the original target, or
+   anything else — squad rides every launch while the toggle is on)
+   and hit **PLAY**.
 
-Loads Doom 2 + PB3 + brightmaps + Maps of Chaos + hearth-logger +
-zetabot-fork + hearth-silencer + copilot-mod. Drops you into MAP01
-of Maps of Chaos on skill 5 (Nightmare).
+Squad ON appends `hearth-logger + zetabot-fork` after the regular pre-stack
+and `copilot-mod` after the silencer, plus the `+dc_autospawn_squad 1`,
+`+dc_debug 1`, `+zb_autonodes 1` CVars — same load order as the legacy
+squad_deploy.bat (now deleted). When OFF, none of those bits ride along.
+
+The toggle persists in `always-on.json` under the `squad.enabled` key.
+The switch is disabled at launcher start if any of the squad asset paths
+(`logger/hearth-logger`, `zetabot-fork`, `copilot-mod`) aren't on disk.
 
 ### Pass criteria
 
@@ -136,7 +144,8 @@ range-appropriate weapon choices against PB3 enemies.
 
 ### Launch
 
-Same as Checkpoint 2: double-click `launch/squad_deploy.bat`.
+Same as Checkpoint 2: open the doom-launcher, flip **Four-God Squad** ON
+in the Library toolbar, click PLAY on a Library card.
 
 ### Pass criteria
 
