@@ -254,9 +254,36 @@ class DoomCopilotController : ZTBotController
     // changes (s != bstate), matching where ZetaBot would DebugLog.
     override void SetBotState(uint s)
     {
+        // Soft-lock breaker (CODE-CC-260518-019): ZetaBot's order system
+        // calls ProcessOrderedState() every tic. When no enemy is in view,
+        // GetOrderState() returns BS_FOLLOWING → SetBotState(currentOrder.orderType)
+        // forces bstate=FOLLOWING regardless of distance or cooldown.
+        // ProcessOrderedState then checks ShouldFollow(goingAfter); when
+        // it returns false (Pilot closer than FollowMax, or cooldown
+        // active), it immediately flips bstate back to WANDERING. The
+        // F→W re-stamps our cooldown and next tic the loop repeats —
+        // 35 Hz flip thrash that runs the game at <10% real speed
+        // (~729 [DC] state_change events in 26 in-game seconds on the
+        // session_20260518_192635.log capture that surfaced this bug).
+        //
+        // Two-part fix:
+        //   (a) Reject the WANDERING→FOLLOWING flip while the cooldown
+        //       is active. Bot stays in W; ProcessOrderedState's F→W
+        //       branch short-circuits (only fires when bstate==FOLLOWING).
+        //       Thrash breaks at the source.
+        //   (b) Only stamp the cooldown on F→W when not already active.
+        //       Otherwise every flip extends the deadline and the
+        //       cooldown never elapses.
+        if (bstate == BS_WANDERING && s == BS_FOLLOWING
+            && level.time < followFailUntilTic)
+        {
+            return;
+        }
+
         // Pathing to commander failed — arm a 1s follow cooldown so
         // ShouldFollow doesn't immediately flip us back to FOLLOWING.
-        if (bstate == BS_FOLLOWING && s == BS_WANDERING)
+        if (bstate == BS_FOLLOWING && s == BS_WANDERING
+            && level.time >= followFailUntilTic)
             followFailUntilTic = level.time + 35;
 
         if (s != bstate && DC_DebugHandler.DebugLevel() >= 1 && possessed)
