@@ -368,6 +368,28 @@ class DoomCopilotController : ZTBotController
         if (SidearmAmmoClass() != "")
             possessed.GiveInventory(SidearmAmmoClass(), 9999);
 
+        // Survivability boost: 200 HP + 200 blue-equivalent armor at
+        // spawn so the squad can absorb the first firefight long enough
+        // to actually engage. PB3 zombies / ASG guys melt a default
+        // 100 HP bot in under 2 seconds on Maps of Chaos density; we
+        // never get a chance to see whether the AI is doing the right
+        // thing. GiveBody(200, 200) bypasses the pawn's MaxHealth so
+        // both vanilla and PB_PlayerPrawn-derived classes accept it.
+        possessed.GiveBody(200, 200);
+        let armor = BasicArmor(possessed.FindInventory("BasicArmor"));
+        if (armor == null)
+        {
+            possessed.GiveInventory("BasicArmor", 1);
+            armor = BasicArmor(possessed.FindInventory("BasicArmor"));
+        }
+        if (armor != null)
+        {
+            armor.SaveAmount = 200;
+            armor.SavePercent = 0.5;
+            armor.Amount = 200;
+            armor.MaxAmount = 200;
+        }
+
         spawnTic = level.time;
 
         if (DC_DebugHandler.DebugLevel() >= 1)
