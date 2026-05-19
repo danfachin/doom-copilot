@@ -43,8 +43,8 @@ class DC_FFAbsorber : Inventory
     // state, no death. `passive=true` means damage being received by the
     // owner; `false` would be damage being dealt out (we ignore that).
     override void ModifyDamage(int damage, Name damageType, out int newdamage,
-                               bool passive, Actor inflictor = null,
-                               Actor source = null, int flags = 0)
+                               bool passive, Actor inflictor,
+                               Actor source, int flags)
     {
         if (!passive) return;
         if (damage <= 0) return;
