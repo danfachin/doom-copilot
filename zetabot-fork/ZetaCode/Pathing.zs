@@ -968,7 +968,15 @@ class ZTPathNode : ZTPositionMarker
         Actor traveller = controller.possessed;
 
         let res = ActorList.Empty();
-        int itersLeft = 5000; // safety limit
+        // DoomCopilot patch 2026-05-18 (CODE-CC-260518-019): cap reduced
+        // from 5000 → 500. Observed soft-locks when 2-3 bots flip W→F
+        // on the same tic, each running A* up to the cap with maps that
+        // accumulate auto-nodes. 5000 iters × O(neighbors) × Distance3D
+        // adds up to multi-hundred-ms tic stalls (worst case). 500 is
+        // ample for any practical Doom map — typical solved paths use
+        // <100 iters; this only triggers on pathologically disconnected
+        // graphs where a longer search is unlikely to succeed anyway.
+        int itersLeft = 500; // safety limit (DC: was 5000)
 
         res.push(self);
 
