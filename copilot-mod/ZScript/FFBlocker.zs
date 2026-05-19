@@ -68,9 +68,15 @@ class DC_FFAbsorber : Inventory
 
         if (DC_DebugHandler.DebugLevel() >= 1)
         {
+            // ZScript ?: rejects (name vs string) — Actor.GetClassName()
+            // returns a Name, "null" is a string literal. Branch widths
+            // must match. Assign-and-default pattern works because
+            // `string x = nameValue` implicitly converts.
             string shooterName = shooter.GetClassName();
-            string srcName = source ? source.GetClassName() : "null";
-            string infName = inflictor ? inflictor.GetClassName() : "null";
+            string srcName = "null";
+            if (source) srcName = source.GetClassName();
+            string infName = "null";
+            if (inflictor) infName = inflictor.GetClassName();
             console.printf("[DC]{\"t\":\"ff_absorb\",\"tic\":%d,"
                 .."\"dmg\":%d,\"shooter\":\"%s\","
                 .."\"source\":\"%s\",\"inflictor\":\"%s\"}",
