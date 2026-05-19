@@ -370,12 +370,19 @@ class DoomCopilotController : ZTBotController
 
         // Survivability boost: 200 HP + 200 blue-equivalent armor at
         // spawn so the squad can absorb the first firefight long enough
-        // to actually engage. PB3 zombies / ASG guys melt a default
-        // 100 HP bot in under 2 seconds on Maps of Chaos density; we
-        // never get a chance to see whether the AI is doing the right
-        // thing. GiveBody(200, 200) bypasses the pawn's MaxHealth so
-        // both vanilla and PB_PlayerPrawn-derived classes accept it.
-        possessed.GiveBody(200, 200);
+        // to actually engage. Default 100 HP bots get melted by PB3
+        // ASGGuy / ShotgunGuyHelmet volleys in under 2 seconds.
+        //
+        // GiveBody(200, 200) was tried first — telemetry showed
+        // bot_spawn hp:100 anyway. PB_PlayerPrawn inherits some path
+        // through GiveBody that caps the bump (didn't find the
+        // override in PB3 source, but the behavior is empirical).
+        // Direct assignment bypasses everything: set Actor.health,
+        // and sync Player.health (PlayerPawn has both fields and they
+        // must agree or the player HUD/damage routing breaks).
+        possessed.health = 200;
+        let pp = PlayerPawn(possessed);
+        if (pp && pp.player) pp.player.health = 200;
 
         // Grant BlueArmor (200 pts at 50% absorption). Using the pickup
         // item invokes GZDoom's standard armor-stack logic — the
