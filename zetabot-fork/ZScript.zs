@@ -572,8 +572,16 @@ class ZTBotController : Actor {
             l.Args[4]
         );
 
+        // DoomCopilot patch 2026-05-18 (CODE-CC-260518-019): null-guard
+        // on currnode. When zb_autonodenormal=0 (DC squad config) the
+        // bot's currnode stays null longer — first USE-action (door /
+        // switch) null-derefs currnode.NodeType here. Hard VM abort
+        // observed: "tried to read from address zero" at this line,
+        // called from TryUse → A_ZetaTick → DC_BrawlerController.5
+        // (tic 108, E1M1). Logic: drop a fresh NT_USE node when EITHER
+        // no node exists OR the existing one doesn't match what we need.
         if (special && CVar.FindCVar('zb_autonodes').GetBool() && CVar.FindCVar('zb_autonodeuse').GetBool() &&
-            (currnode.NodeType != ZTPathNode.NT_USE || !possessed.CheckSight(currNode) || possessed.Distance2D(currNode) > 40)
+            (currnode == null || currnode.NodeType != ZTPathNode.NT_USE || !possessed.CheckSight(currNode) || possessed.Distance2D(currNode) > 40)
         ) {
             SetCurrentNode(ZTPathNode.plopNode(possessed.pos, ZTPathNode.NT_USE, possessed.angle));
             currNode.Angle = Angle;
@@ -2940,7 +2948,12 @@ class ZTBotController : Actor {
         if (bclosest) {
             AimToward(bclosest, 50);
 
-            if ((currNode.nodeType != ZTPathnode.NT_SHOOT || possessed.Distance2D(currNode) > 40) && CVar.FindCVar('zb_autonodes').GetBool()) {
+            // DoomCopilot patch 2026-05-18 (CODE-CC-260518-019): null-guard
+            // on currNode for the same reason as AutoUseAtAngle:575. With
+            // zb_autonodenormal=0 (DC squad config) currNode stays null
+            // longer, and a bot lining up a shootable barrel before any
+            // node has been dropped null-derefs nodeType here.
+            if ((currNode == null || currNode.nodeType != ZTPathnode.NT_SHOOT || possessed.Distance2D(currNode) > 40) && CVar.FindCVar('zb_autonodes').GetBool()) {
                 SetCurrentNode(ZTPathNode.plopNode(possessed.pos, ZTPathNode.NT_SHOOT, possessed.AngleTo(bclosest)));
 
                 if (currNode)
