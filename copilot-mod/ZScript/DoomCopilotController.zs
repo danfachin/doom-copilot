@@ -376,19 +376,16 @@ class DoomCopilotController : ZTBotController
         // thing. GiveBody(200, 200) bypasses the pawn's MaxHealth so
         // both vanilla and PB_PlayerPrawn-derived classes accept it.
         possessed.GiveBody(200, 200);
-        let armor = BasicArmor(possessed.FindInventory("BasicArmor"));
-        if (armor == null)
-        {
-            possessed.GiveInventory("BasicArmor", 1);
-            armor = BasicArmor(possessed.FindInventory("BasicArmor"));
-        }
-        if (armor != null)
-        {
-            armor.SaveAmount = 200;
-            armor.SavePercent = 0.5;
-            armor.Amount = 200;
-            armor.MaxAmount = 200;
-        }
+
+        // Grant BlueArmor (200 pts at 50% absorption). Using the pickup
+        // item invokes GZDoom's standard armor-stack logic — the
+        // pawn's BasicArmor inventory instance ends up at Amount=200
+        // with SavePercent=0.5. Setting BasicArmor fields directly
+        // doesn't work: SaveAmount/SavePercent live on BasicArmorPickup
+        // (the pickup item), not the BasicArmor (the inventory state).
+        // Compile error confirmed this: "Unknown identifier 'SaveAmount'"
+        // at this site on the previous attempt.
+        possessed.GiveInventory("BlueArmor", 1);
 
         spawnTic = level.time;
 
