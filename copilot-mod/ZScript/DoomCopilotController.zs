@@ -217,7 +217,6 @@ class DoomCopilotController : ZTBotController
 
             if (SetCommander(pmo))
             {
-                BotChat("COMM", 0.8);
                 return;
             }
         }
@@ -248,6 +247,20 @@ class DoomCopilotController : ZTBotController
         if (possessed.Distance3D(enemy) > FleeEnemyDist()) return;
 
         ConsiderSetBotState(BS_FLEEING);
+    }
+
+    // Voice silence. ZetaBot's BotChat is called from 8 sites in the
+    // fork (HURT/ELIM/IDLE/TARG/ACTV/ORDR/COMM/IDLE-2) and reads as
+    // chatter under combat — too verbose for the current squad scale.
+    // Returning false at the override layer suppresses all of them for
+    // DC personas without touching the upstream fork or fiddling with
+    // zb_talkfrequency (which would affect every bot in the level).
+    //
+    // If we ever bring back per-persona voices, add a virtual
+    // EnableChat() returning false here and have personas override.
+    override bool BotChat(String kind, double importance)
+    {
+        return false;
     }
 
     // Log state transitions at dc_debug >= 1. Only fires on real
