@@ -21,8 +21,11 @@ class DC_SharpshooterController : DoomCopilotController
     override double FollowMin()        { return 400.0; }
     override double FollowMax()        { return 250.0; }
 
-    // Preserves self aggressively (35% HP retreat).
-    override double FleeHpFrac()       { return 0.35; }
+    // Calibration pass (CHAT-CC-260519-054, 49 sessions / 44 deaths /
+    // 707 min): Dan's p50 survival low-water is 76 HP; p25 is 52. The
+    // earlier 0.35 seed bailed far below Dan's actual retreat instinct.
+    // 0.64 = midpoint of the safe (0.76) and tank (0.52) thresholds.
+    override double FleeHpFrac()       { return 0.64; }
     override double FleeEnemyDist()    { return 1280.0; }
     override bool   CanFlee()          { return true; }
 
@@ -30,10 +33,12 @@ class DC_SharpshooterController : DoomCopilotController
     override double AimScatterMult()   { return 0.3; }
     override double TurnSpeedMult()    { return 1.4; }
 
-    // Marksman standoff: plant between ~640 and ~1024. Well outside
-    // the Pilot's SSG / shotgun cone, inside the DMR's sweet spot.
-    override double EngagementCloseRange()   { return 1024.0; }
-    override double EngagementBackoffRange() { return  640.0; }
+    // Calibrated standoff: DMR kills land at p25=172, median=232,
+    // p75=422 in Dan's telemetry — way inside the prior 640-1024 band.
+    // New envelope brackets the DMR sweet spot (300-600) so the bot
+    // plants where shots actually convert.
+    override double EngagementCloseRange()   { return 600.0; }
+    override double EngagementBackoffRange() { return 300.0; }
 
     // Slow and grounded — marksmen don't juke. Cut further from 0.65/0.3
     // after 2026-04-20 playtest showed the squad zipping across the
@@ -49,7 +54,9 @@ class DC_SharpshooterController : DoomCopilotController
 }
 
 // ── Brawler ───────────────────────────────────────────────────
-// Close-range aggressor. In the thick of it, rarely retreats.
+// Close-range kiter. Dashes in, dashes out — constant motion oscillation.
+// The engagement envelope swings every ~0.8s so the bot alternately
+// commits to point-blank then backpedals to range. Fires throughout.
 class DC_BrawlerController : DoomCopilotController
 {
     override string PersonaName()      { return "Brawler"; }
@@ -58,8 +65,10 @@ class DC_BrawlerController : DoomCopilotController
     override double FollowMin()        { return 150.0; }
     override double FollowMax()        { return 100.0; }
 
-    // Low HP threshold — aggressive hold.
-    override double FleeHpFrac()       { return 0.15; }
+    // Calibration pass: Dan's p10 survival floor is 31. Seed 0.15 was
+    // brave but below the empirical floor — small nudge to 0.20 keeps
+    // the aggressive identity while respecting the data.
+    override double FleeHpFrac()       { return 0.20; }
     override double FleeEnemyDist()    { return 768.0; }
     override bool   CanFlee()          { return true; }
 
@@ -67,9 +76,23 @@ class DC_BrawlerController : DoomCopilotController
     override double AimScatterMult()   { return 0.9; }
     override double TurnSpeedMult()    { return 1.2; }
 
-    // Closes aggressively for flamer/SSG range. Plants between 96-192.
-    override double EngagementCloseRange()   { return 192.0; }
-    override double EngagementBackoffRange() { return  96.0; }
+    // Kite oscillation. Subroutine_Attack consults these every tic
+    // (zetabot-fork/zscript.zs:2549/2557): if distance > Close → advance,
+    // if distance < Backoff → back off, otherwise plant and shoot. By
+    // returning time-varying values we make the bot continuously chase
+    // a moving target band — a dash-in / dash-out kite without touching
+    // the attack loop itself.
+    //
+    //   Phase 0 (dash-in,  ~0.8s): band = 60-120u, bot sprints close
+    //   Phase 1 (dash-out, ~0.8s): band = 500-600u, bot backpedals
+    //
+    // Empirical Brawler-weapon ranges from telemetry (Flamethrower
+    // median 415, SSG median 314) emerge as the time-average between
+    // the two phases — bot fires both directions of the kite cycle.
+    const KITE_PHASE_TICS = 28;
+    int KitePhase()                          { return (level.time / KITE_PHASE_TICS) & 1; }
+    override double EngagementCloseRange()   { return KitePhase() == 0 ? 120.0 : 600.0; }
+    override double EngagementBackoffRange() { return KitePhase() == 0 ?  60.0 : 500.0; }
 
     // Moderate speed, mid damping — advances purposefully, minor weave.
     // Trimmed from 0.85/0.5 after 2026-04-20 playtest.
@@ -93,8 +116,11 @@ class DC_TankController : DoomCopilotController
     override double FollowMin()        { return 180.0; }
     override double FollowMax()        { return 120.0; }
 
-    // Survives to maintain formation — flees at 50% HP.
-    override double FleeHpFrac()       { return 0.50; }
+    // Calibration pass: Dan's p50 survival low-water is 76 HP. The
+    // Tank's whole identity is "owns the ground until it can't" — match
+    // the Pilot's actual retreat reflex rather than under-retreating
+    // at 50%.
+    override double FleeHpFrac()       { return 0.76; }
     override double FleeEnemyDist()    { return 1024.0; }
     override bool   CanFlee()          { return true; }
 
@@ -113,10 +139,15 @@ class DC_TankController : DoomCopilotController
     override double MoveSpeedMult()    { return 0.45; }
     override double StrafeDamping()    { return 0.12; }
 
-    // Minigun + rocket launcher + SMG sidearm.
+    // Minigun + rocket launcher + Deagle sidearm. Calibration showed
+    // Dan dwells on the Deagle (127s) 5.7x more than the SMG (22s), so
+    // the Tank inherits the hand-cannon. The Deagle still routes through
+    // the PB3Sidearm ZetaWeapon wrapper (same PB_LowCalMag virtual ammo)
+    // since the wrapper's IsPickupOf accepts Pistol/Revolver/Deagle/SMG/MP40
+    // uniformly — see copilot-mod/ZScript/WeaponModule/PB3Weapons.zs:211.
     override string PrimaryClass1()    { return "PB_Minigun"; }
     override string PrimaryClass2()    { return "PB_RocketLauncher"; }
-    override string SidearmClass()     { return "PB_SMG"; }
+    override string SidearmClass()     { return "PB_Deagle"; }
     override string SidearmAmmoClass() { return "PB_LowCalMag"; }
 }
 
