@@ -116,7 +116,7 @@ class HearthLogger : EventHandler
             pmo.vel.x, pmo.vel.y);
 
         int logged = 0;
-        let it = ThinkerIterator.Create("Actor");
+        let it = ThinkerIterator.Create("Actor", STAT_DEFAULT);
         Actor mo;
         while (mo = Actor(it.Next()))
         {
