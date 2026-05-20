@@ -91,8 +91,15 @@ The squad is now an overlay toggle in the doom-launcher GUI
 
 Squad ON appends `hearth-logger + zetabot-fork` after the regular pre-stack
 and `copilot-mod` after the silencer, plus the `+dc_autospawn_squad 1`,
-`+dc_debug 1`, `+zb_autonodes 1` CVars — same load order as the legacy
-squad_deploy.bat (now deleted). When OFF, none of those bits ride along.
+`+dc_debug 0`, `+zb_autonodes 1`, `+zb_autonodenormal 0` CVars — same load
+order as the legacy squad_deploy.bat (now deleted). When OFF, none of those
+bits ride along.
+
+`dc_debug` shipped as 1 originally; flipped to 0 as the default
+(2026-05-19, CHAT-CC-260519-054) since the `[DC]` event spam was a
+non-trivial slice of per-tic sync-IO under combat. Re-enable on a
+per-session basis via the launcher's CVar field if you want
+state_change / bot_tick tracing.
 
 The toggle persists in `always-on.json` under the `squad.enabled` key.
 The switch is disabled at launcher start if any of the squad asset paths
@@ -109,11 +116,25 @@ Within 1 second of the map loading:
 
 ### Behavioral checks — are personas visibly distinct?
 
-- **Sharpshooter** hangs back further than the others (follow dist 400/250)
-- **Tank** sticks tight to you (follow dist 180/120)
-- **Brawler** rushes forward, aggressive on engagements (flee at only 15% HP)
+- **Sharpshooter** hangs back further than the others (follow dist 400/250).
+  Post-calibration (2026-05-19) plants at 300-600u from enemies (was 640-1024)
+  and retreats at 64% HP (was 35%).
+- **Tank** sticks tight to you (follow dist 180/120). Post-calibration retreats
+  at 76% HP (was 50%), holds a Deagle sidearm (was SMG).
+- **Brawler** *kites* — dashes in for ~0.8s then back out for ~0.8s on a 1.6s
+  cycle, firing through both phases. Should read as constantly moving, not
+  static. Retreats at 20% HP.
 - **Death-Wish** — NOT in auto-deploy squad; test with **F9** keybind.
   Should ignore you entirely and charge whatever's nearest.
+
+### Audio / console check
+
+Squad bots run **silent** now — no BotChat voice callouts (HURT/ELIM/IDLE/
+TARG/COMM etc. were overridden out 2026-05-19). The console still prints
+one-shot startup messages (`Doom Copilot: auto-deploying squad...`,
+`deployed <Persona>` ×3) and PB3 system messages, but combat is quiet.
+If you hear ZetaBot voice barks during combat, the override isn't
+binding — check that the persona class is descended from `DoomCopilotController`.
 
 ### Key bindings
 
@@ -164,21 +185,27 @@ Within 30 seconds of combat starting:
 - `[HL]{"t":"kill",...,"killer":"ZetaDoom"}` lines in data/session_*.log
   prove bots are landing hits
 
-### Calibration
+### Calibration — first pass landed 2026-05-19 (CHAT-CC-260519-054)
 
-After the session, run:
+After each session, run:
 ```
 py -3 brain/calibrate_personas.py
 ```
 Regenerates `brain/calibrated.md` with updated threat weights, weapon
 dwell, flee thresholds, and engagement ranges.
 
-### Apply calibration (optional)
+**First-pass deltas applied** (49 sessions / 5745 kills / 44 deaths / 707 min):
+| Persona | Knob | Seed | Calibrated |
+|---|---|---|---|
+| Sharpshooter | FleeHpFrac | 0.35 | 0.64 |
+| Sharpshooter | EngagementClose/Backoff | 1024/640 | 600/300 |
+| Brawler | FleeHpFrac | 0.15 | 0.20 |
+| Tank | FleeHpFrac | 0.50 | 0.76 |
+| Tank | Sidearm | PB_SMG | PB_Deagle |
 
-If the numbers look better than my hand-tuned seeds, hand-edit
-`copilot-mod/ZScript/PersonaControllers.zs` (flee fractions) or
-`copilot-mod/ZScript/WeaponModule/PB3Weapons.zs` (RateSelf curves).
-Nothing auto-patches — keep design intent separate from empirical signal.
+Re-run after every meaningful playtest. Empirical signal updates fastest;
+hand-tuned design intent stays in the override bodies, the numbers under
+the overrides drift with each calibration pass.
 
 ### If it fails
 
@@ -186,6 +213,53 @@ Nothing auto-patches — keep design intent separate from empirical signal.
 - **Bots rocket-suiciding** → close-range RateSelf guard failed; null target?
 - **VM crash during combat** → paste stack; likely null target in a Fire()
 - **Bots don't kill anything** → damage too low, bump numbers in PB3Weapons.zs
+
+---
+
+## Checkpoint 3.5 — Brawler kite oscillation (2026-05-19)
+
+**Goal:** Confirm the Brawler's time-varying engagement envelope produces
+visible dash-in / dash-out motion rather than the prior static plant.
+
+### What to watch
+
+- Brawler should be **continuously moving** during combat. Never reads as
+  "stationary, firing." Read as "in, fire, back, fire, in, fire, ..."
+- The cycle is ~1.6s end-to-end (~0.8s in / ~0.8s out at 28-tic phases).
+  Count Mississippis if it's not obvious.
+- Sharpshooter and Tank should NOT kite — they plant at their (now
+  calibrated) engagement bands. If you see them oscillating, the kite
+  override leaked.
+
+### Trace it (optional)
+
+Open console and:
+```
+set dc_debug_brawler_kite 1
+```
+Each oscillation transition emits a `[DC]{"t":"kite_phase",...}` line to
+the logfile (`D:\Users\Dan\dev\doom-copilot\data\session_*.log`). Phase 0
+= dash-in (Close 120 / Backoff 60), phase 1 = dash-out (Close 600 / Backoff 500).
+
+### Tuning knobs
+
+If the kite feels wrong, the two knobs are in
+`copilot-mod/ZScript/PersonaControllers.zs` in `DC_BrawlerController`:
+- `KITE_PHASE_TICS` — phase length (28 = ~0.8s; lower = manic, higher = lazier).
+- The two dual-band tuples in `EngagementCloseRange()` /
+  `EngagementBackoffRange()` — `(120, 60)` for dash-in, `(600, 500)` for
+  dash-out. Tighter inner band → harder commit close; wider outer band
+  → more dramatic backpedal.
+
+### If it fails
+
+- **Brawler stands still** → `dc_debug_brawler_kite 1` and check the
+  logfile. No `kite_phase` events = override isn't binding (check class
+  hierarchy). Constant `kite_phase` events but no movement = ZetaBot's
+  Subroutine_Attack didn't read the new ranges (rare; would suggest the
+  `override double` keyword fell off the wrong end of a refactor).
+- **Brawler oscillates but the band feels wrong** → adjust the four
+  numbers; re-test.
 
 ---
 
