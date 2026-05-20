@@ -583,6 +583,27 @@ class ZTBotController : Actor {
         if (special && CVar.FindCVar('zb_autonodes').GetBool() && CVar.FindCVar('zb_autonodeuse').GetBool() &&
             (currnode == null || currnode.NodeType != ZTPathNode.NT_USE || !possessed.CheckSight(currNode) || possessed.Distance2D(currNode) > 40)
         ) {
+            // DoomCopilot patch 2026-05-19 (CHAT-CC-260519-054): cap
+            // NT_USE node growth. This site is the sole auto-plopper
+            // for NT_USE nodes; over long sessions one node accrues per
+            // door / lift / switch, and the pathfinding graph + every
+            // per-tic node walk pay for the bloat. Before plopping a
+            // new node, count existing NT_USE nodes; if at/over the
+            // cap, drop the first non-current one we find (ThinkerIterator
+            // returns spawn order, so this is approximately "oldest").
+            int dc_useCount = 0;
+            ZTPathNode dc_oldest = null;
+            let dc_it = ThinkerIterator.Create("ZTPathNode", STAT_DEFAULT);
+            ZTPathNode dc_n;
+            while (dc_n = ZTPathNode(dc_it.Next())) {
+                if (dc_n.nodeType != ZTPathNode.NT_USE) continue;
+                dc_useCount++;
+                if (dc_oldest == null && dc_n != currNode) dc_oldest = dc_n;
+            }
+            if (dc_useCount >= 200 && dc_oldest != null) {
+                dc_oldest.Destroy();
+            }
+
             SetCurrentNode(ZTPathNode.plopNode(possessed.pos, ZTPathNode.NT_USE, possessed.angle));
             currNode.Angle = Angle;
         }
