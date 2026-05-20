@@ -149,6 +149,27 @@ class DoomCopilotController : ZTBotController
             possessed.CheckSight(enemy) &&
             double(possessed.Health) < hpThresh)
         {
+            // DoomCopilot 2026-05-19 (CHAT-CC-260519-054): when commander
+            // sits on the safe side of the threat (meaningfully further
+            // from the enemy than we are), route flee through PathMoveTo
+            // toward Pilot rather than the blind MoveAwayFrom vector.
+            // Without this, Tank/Sharpshooter retreats can walk into
+            // walls or alcoves; with it, they fall back to cover the
+            // Pilot's already at. PathMoveTo returns false when no path
+            // exists — in that case fall through to MoveAwayFrom so the
+            // bot still does *something* useful.
+            //
+            // The 96u slack on dist_CE > dist_BE prevents flip-flop when
+            // bot and commander are roughly equidistant from the enemy.
+            if (commander != null && possessed.CheckSight(commander))
+            {
+                double distBE = possessed.Distance3D(enemy);
+                double distCE = commander.Distance3D(enemy);
+                if (distCE > distBE + 96.0 && PathMoveTo(commander))
+                {
+                    return;
+                }
+            }
             MoveAwayFrom(enemy);
         }
         else
