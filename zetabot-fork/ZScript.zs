@@ -1387,6 +1387,23 @@ class ZTBotController : Actor {
         ZetaBotPawn zbp;
         PlayerPawn pp;
 
+        // DoomCopilot patch 2026-05-19 (CODE-CC-260518-019): friendly
+        // bots (summoned with summonfriend) had bFRIENDLY=true; Pilot
+        // has bFRIENDLY=false. The vanilla return clause below uses
+        // `from.bFRIENDLY != other.bFRIENDLY` as a primary signal — so
+        // a friendly bot evaluating the Pilot returned true (different
+        // friendly flag → "enemies"). Bots have been targeting Pilot
+        // (and shredding ammo aiming at him) the whole session. The
+        // DC FFBlocker absorbed the damage, but the aim was real.
+        //
+        // Cure: when `from` is bFRIENDLY, any PlayerPawn is an ally
+        // regardless of flag mismatch. Catches Pilot (a PlayerPawn
+        // with .player) AND any other friendly bot (PlayerPawn subclass).
+        // Self-check upstream (cur == from) handles the bot vs self case.
+        if (from.bFRIENDLY && other is "PlayerPawn") {
+            return false;
+        }
+
         if (CVar.FindCVar('teamplay').GetInt() >= 1) {
             Actor comparee;
 
@@ -2228,6 +2245,23 @@ class ZTBotController : Actor {
             ConsiderSetBotState(BS_WANDERING);
 
             // Prevent getting stuck in a state transition loop.
+            RandomMove();
+            return;
+        }
+
+        // DoomCopilot patch 2026-05-19 (CODE-CC-260518-019): the conditional
+        // above can fall through with lastEnemy == null when lastEnemyPos
+        // exists, commander is alive, and PathMoveTo(commander) succeeds —
+        // because `&&` binds tighter than `||`, the lastEnemy==null branch
+        // requires ALL commander-clauses to be true to give up. Without
+        // this guard, the next line's lastEnemy.pos.xy null-derefs.
+        // Match the existing give-up pattern used 3 lines up.
+        if (lastEnemy == null) {
+            enemy = null;
+            SetOrder(null);
+            ConsiderSetBotState(BS_WANDERING);
+            if (lastEnemyPos && lastEnemyPos.nodeType == ZTPathNode.NT_TARGET) lastEnemyPos.Destroy();
+            lastEnemyPos = null;
             RandomMove();
             return;
         }
