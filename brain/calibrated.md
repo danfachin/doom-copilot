@@ -1,6 +1,6 @@
 # Persona Calibration — empirical tuning from Dan's telemetry
 
-Generated from 6 sessions (17 map segments, 1441 kills, 7 deaths, 118.7 min of play).
+Generated from 49 sessions (98 map segments, 5745 kills, 44 deaths, 707.0 min of play).
 
 ## 1. Threat weights
 
@@ -8,26 +8,26 @@ Ordered by damage-per-encounter. Pre-apply to `DoomCopilotController.targetPrior
 
 | Class | Dmg/encounter | Weight | Dmg instances | Encounters |
 |-------|---------------|--------|---------------|-----------|
-| HelmetSergeantLastStand1 | 0.083 | 1.0 | 1 | 12 |
-| PB_InfernalArachnotron | 0.021 | 0.253 | 2 | 95 |
-| PB_Daedabus | 0.019 | 0.227 | 18 | 951 |
-| PB_PistolZombieman2 | 0.015 | 0.179 | 49 | 3290 |
-| ASGGuy | 0.014 | 0.172 | 15 | 1049 |
-| PB_HelmetCommando | 0.011 | 0.127 | 25 | 2368 |
-| PB_Commando | 0.01 | 0.119 | 52 | 5232 |
-| PB_Phantasm | 0.009 | 0.109 | 6 | 660 |
-| PB_CyberKnight | 0.009 | 0.105 | 30 | 3431 |
-| PB_HelmetZombieman | 0.008 | 0.097 | 31 | 3846 |
-| PB_Zombieman | 0.007 | 0.079 | 43 | 6528 |
-| PB_ShotgunGuy | 0.007 | 0.078 | 56 | 8594 |
-| PB_Knight | 0.006 | 0.069 | 12 | 2100 |
-| PB_CyberBaron | 0.006 | 0.067 | 9 | 1606 |
-| PB_BeamRev | 0.005 | 0.057 | 2 | 422 |
-| PB_ShotgunGuyHelmet | 0.004 | 0.043 | 71 | 19985 |
-| PB_CarbineZombieman | 0.003 | 0.038 | 7 | 2216 |
-| DNImpVariant2 | 0.002 | 0.023 | 28 | 14721 |
-| PB_PistolZombieman1 | 0.002 | 0.022 | 8 | 4383 |
-| PB_Spectre | 0.002 | 0.02 | 8 | 4893 |
+| SergeantLastStand1 | 1.0 | 1.0 | 1 | 1 |
+| ZetaDoom | 0.115 | 0.115 | 21 | 182 |
+| ArmlessDemon | 0.077 | 0.077 | 3 | 39 |
+| HelmetSergeantLastStand1 | 0.067 | 0.067 | 1 | 15 |
+| HeavyMGZombieman | 0.047 | 0.047 | 4 | 86 |
+| PB_Afrit | 0.025 | 0.025 | 2 | 81 |
+| RevenantU | 0.022 | 0.022 | 1 | 46 |
+| PB_Daedabus | 0.01 | 0.01 | 60 | 6073 |
+| PB_Mancubus1 | 0.009 | 0.009 | 40 | 4526 |
+| ASGGuy | 0.008 | 0.008 | 91 | 10721 |
+| PB_Annihilator | 0.008 | 0.008 | 8 | 1027 |
+| PB_Mastermind | 0.007 | 0.007 | 1 | 138 |
+| PB_HelmetCommando | 0.007 | 0.007 | 100 | 15314 |
+| PB_Zombieman | 0.006 | 0.006 | 166 | 28130 |
+| PB_Commando | 0.006 | 0.006 | 175 | 29731 |
+| PB_CarbineZombieman | 0.006 | 0.006 | 27 | 4764 |
+| PB_PistolZombieman2 | 0.006 | 0.006 | 88 | 15651 |
+| PB_CyberKnight | 0.005 | 0.005 | 58 | 12661 |
+| PB_ShotgunGuy | 0.004 | 0.004 | 206 | 46680 |
+| PB_HelmetZombieman | 0.004 | 0.004 | 71 | 16620 |
 
 ## 2. Weapon dwell time
 
@@ -35,33 +35,42 @@ How much time Dan actually spends holding each weapon. Use to decide which weapo
 
 | Weapon | Tics | Seconds | Dwell fraction |
 |--------|------|---------|----------------|
-| PB_Shotgun | 3594 | 102.7 | 1.0 |
-| PB_Minigun | 1734 | 49.5 | 0.482 |
-| PB_DMR | 1456 | 41.6 | 0.405 |
-| PB_SSG | 1294 | 37.0 | 0.36 |
-| PB_Autoshotgun | 944 | 27.0 | 0.263 |
-| PB_Carbine | 938 | 26.8 | 0.261 |
-| PB_Revolver | 909 | 26.0 | 0.253 |
-| PB_RocketLauncher | 796 | 22.7 | 0.221 |
-| PB_Pistol | 678 | 19.4 | 0.189 |
-| PB_Flamethrower | 515 | 14.7 | 0.143 |
-| PB_Chainsaw | 479 | 13.7 | 0.133 |
-| PB_BFG9000 | 253 | 7.2 | 0.07 |
-| PB_M2Plasma | 243 | 6.9 | 0.068 |
-| PB_Axe | 103 | 2.9 | 0.029 |
-| PB_M1Plasma | 64 | 1.8 | 0.018 |
-| PB_Fists | 35 | 1.0 | 0.01 |
+| PB_Autoshotgun | 12235 | 349.6 | 1.0 |
+| PB_Shotgun | 10699 | 305.7 | 0.874 |
+| PB_Minigun | 8644 | 247.0 | 0.706 |
+| PB_DMR | 8330 | 238.0 | 0.681 |
+| PB_Revolver | 5706 | 163.0 | 0.466 |
+| PB_Deagle | 4452 | 127.2 | 0.364 |
+| PB_RocketLauncher | 4149 | 118.5 | 0.339 |
+| PB_SuperGL | 3511 | 100.3 | 0.287 |
+| PB_SSG | 2703 | 77.2 | 0.221 |
+| PB_Carbine | 2007 | 57.3 | 0.164 |
+| PB_M1Plasma | 1793 | 51.2 | 0.147 |
+| PB_Nailgun | 1611 | 46.0 | 0.132 |
+| PB_Pistol | 1514 | 43.3 | 0.124 |
+| PB_LMG | 1505 | 43.0 | 0.123 |
+| PB_Flamethrower | 1447 | 41.3 | 0.118 |
+| PB_Railgun | 1344 | 38.4 | 0.11 |
+| PB_Chainsaw | 992 | 28.3 | 0.081 |
+| PB_BFG9000 | 872 | 24.9 | 0.071 |
+| PB_SMG | 776 | 22.2 | 0.063 |
+| PB_QuadSG | 616 | 17.6 | 0.05 |
+| PB_M2Plasma | 579 | 16.5 | 0.047 |
+| PB_Axe | 284 | 8.1 | 0.023 |
+| PB_Fists | 115 | 3.3 | 0.009 |
+| Fist | 12 | 0.3 | 0.001 |
+| Pistol | 3 | 0.1 | 0.0 |
 
 ## 3. Flee-HP thresholds
 
-- Sampled **7 deaths**
+- Sampled **44 deaths**
 - Median HP at death: **10**
-- Survival low-water — p50: 78, p25: 60, p10: 41
+- Survival low-water — p50: 76, p25: 52, p10: 31
 
 ### Suggested persona flee thresholds (override FleeHpFrac):
-- **Tank** (safe): `return 0.78;`
-- **Sharpshooter** (moderate): `return 0.69;`
-- **Brawler** (aggressive): `return 0.41;`
+- **Tank** (safe): `return 0.76;`
+- **Sharpshooter** (moderate): `return 0.64;`
+- **Brawler** (aggressive): `return 0.31;`
 - **Death-Wish**: CanFlee() = false (unchanged)
 
 ## 4. Engagement ranges by weapon
@@ -70,17 +79,26 @@ The empirical range at which kills happen for each weapon. Use to calibrate `Rat
 
 | Weapon | Kills sampled | p25 | Median | p75 | Mean |
 |--------|---------------|-----|--------|-----|------|
-| PB_Shotgun | 367 | 189 | 287 | 405 | 331 |
-| PB_Minigun | 307 | 248 | 347 | 625 | 440 |
-| PB_SSG | 195 | 199 | 300 | 489 | 405 |
-| PB_RocketLauncher | 178 | 288 | 337 | 547 | 437 |
-| PB_DMR | 174 | 174 | 224 | 395 | 307 |
-| PB_BFG9000 | 131 | 131 | 204 | 375 | 297 |
-| PB_Carbine | 131 | 254 | 836 | 1158 | 721 |
-| PB_Autoshotgun | 102 | 221 | 281 | 434 | 356 |
-| PB_Revolver | 74 | 288 | 539 | 897 | 600 |
-| PB_Pistol | 55 | 158 | 233 | 349 | 277 |
-| PB_Chainsaw | 55 | 47 | 65 | 139 | 156 |
-| PB_Flamethrower | 40 | 180 | 264 | 1110 | 568 |
-| PB_Axe | 12 | 125 | 204 | 749 | 393 |
-| PB_M2Plasma | 12 | 207 | 235 | 319 | 274 |
+| PB_Autoshotgun | 1560 | 197 | 293 | 456 | 371 |
+| PB_Minigun | 1176 | 211 | 333 | 527 | 399 |
+| PB_Shotgun | 1087 | 189 | 286 | 433 | 352 |
+| PB_DMR | 958 | 172 | 232 | 422 | 344 |
+| PB_RocketLauncher | 597 | 268 | 391 | 608 | 468 |
+| PB_SuperGL | 585 | 220 | 317 | 496 | 395 |
+| PB_BFG9000 | 480 | 246 | 506 | 753 | 524 |
+| PB_Deagle | 436 | 191 | 297 | 473 | 347 |
+| PB_Revolver | 434 | 178 | 285 | 499 | 370 |
+| PB_SSG | 371 | 202 | 314 | 483 | 396 |
+| PB_Carbine | 242 | 283 | 579 | 1052 | 634 |
+| PB_Nailgun | 210 | 245 | 329 | 535 | 411 |
+| PB_M1Plasma | 174 | 184 | 314 | 557 | 430 |
+| PB_Flamethrower | 141 | 260 | 415 | 693 | 500 |
+| PB_Chainsaw | 116 | 50 | 89 | 199 | 158 |
+| PB_Pistol | 98 | 164 | 249 | 405 | 318 |
+| PB_SMG | 93 | 184 | 277 | 492 | 379 |
+| PB_LMG | 90 | 115 | 188 | 341 | 260 |
+| PB_Railgun | 79 | 324 | 455 | 665 | 516 |
+| PB_QuadSG | 59 | 118 | 163 | 236 | 248 |
+| PB_M2Plasma | 53 | 277 | 332 | 500 | 381 |
+| PB_Axe | 25 | 100 | 135 | 446 | 284 |
+| PB_Fists | 5 | 217 | 242 | 245 | 424 |
