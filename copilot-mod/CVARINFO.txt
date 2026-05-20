@@ -15,3 +15,10 @@ user bool dc_autospawn_squad = false;
 // redirects console output to the logfile so they live alongside
 // hearth-logger's `[HL]` events. Grep the logfile post-run.
 user int dc_debug = 0;
+
+// dc_debug_brawler_kite — when 1, Brawler emits a [DC]kite_phase JSON
+// event on each oscillation transition (dash-in <-> dash-out). Lets
+// you trace the kite cycle without re-enabling the dc_debug=1 firehose.
+// Cheap — at most ~22 events/min per Brawler (2 transitions per 1.6s
+// cycle, only emits when phase actually changes).
+user bool dc_debug_brawler_kite = false;

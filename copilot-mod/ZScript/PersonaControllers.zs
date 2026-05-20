@@ -90,7 +90,44 @@ class DC_BrawlerController : DoomCopilotController
     // median 415, SSG median 314) emerge as the time-average between
     // the two phases — bot fires both directions of the kite cycle.
     const KITE_PHASE_TICS = 28;
-    int KitePhase()                          { return (level.time / KITE_PHASE_TICS) & 1; }
+
+    // Last phase observed by KitePhase(). Default 0 — first transition
+    // out of phase 0 will emit; the implicit phase-0-on-spawn is
+    // undocumented in logs but that's fine for tracing.
+    int lastKitePhase;
+
+    int KitePhase()
+    {
+        int phase = (level.time / KITE_PHASE_TICS) & 1;
+        if (phase != lastKitePhase)
+        {
+            // Diagnostic emit gated on dc_debug_brawler_kite (separate
+            // from the global dc_debug spam — lets us scope the trace
+            // to just the kite without re-enabling everything else).
+            let cv = CVar.FindCVar("dc_debug_brawler_kite");
+            if (cv && cv.GetBool() && possessed)
+            {
+                string enemyName = "none";
+                double enemyDist = -1;
+                if (enemy)
+                {
+                    enemyName = enemy.GetClassName();
+                    enemyDist = possessed.Distance3D(enemy);
+                }
+                console.printf("[DC]{\"t\":\"kite_phase\",\"tic\":%d,"
+                    .."\"persona\":\"%s\",\"phase\":%d,"
+                    .."\"close\":%.0f,\"backoff\":%.0f,"
+                    .."\"enemy\":\"%s\",\"dist_enemy\":%.0f}",
+                    level.time, PersonaName(), phase,
+                    phase == 0 ? 120.0 : 600.0,
+                    phase == 0 ?  60.0 : 500.0,
+                    enemyName, enemyDist);
+            }
+            lastKitePhase = phase;
+        }
+        return phase;
+    }
+
     override double EngagementCloseRange()   { return KitePhase() == 0 ? 120.0 : 600.0; }
     override double EngagementBackoffRange() { return KitePhase() == 0 ?  60.0 : 500.0; }
 
