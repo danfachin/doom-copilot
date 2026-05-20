@@ -591,6 +591,24 @@ class ZTBotController : Actor {
             // new node, count existing NT_USE nodes; if at/over the
             // cap, drop the first non-current one we find (ThinkerIterator
             // returns spawn order, so this is approximately "oldest").
+            //
+            // QA fix 2026-05-19: cross-bot safety. GZDoom does not
+            // auto-null Actor references after Destroy() — see
+            // zetabot-fork:2092 where the fork manually nulls
+            // lastEnemyPos after Destroy. Evicting a node held as
+            // currNode by ANY bot would dangle that bot's reference and
+            // null-deref on the next nodeType read (same abort signature
+            // as the prior CODE-CC-260518-019 patch). So we snapshot all
+            // controllers' currNodes first and exclude them from the
+            // candidate pool. If no safe candidate exists, skip eviction
+            // — the cap exceeds gracefully rather than crashing.
+            Array<ZTPathNode> dc_heldNodes;
+            let dc_cit = ThinkerIterator.Create("ZTBotController", STAT_DEFAULT);
+            ZTBotController dc_cont;
+            while (dc_cont = ZTBotController(dc_cit.Next())) {
+                if (dc_cont.currNode != null) dc_heldNodes.Push(dc_cont.currNode);
+            }
+
             int dc_useCount = 0;
             ZTPathNode dc_oldest = null;
             let dc_it = ThinkerIterator.Create("ZTPathNode", STAT_DEFAULT);
@@ -598,7 +616,13 @@ class ZTBotController : Actor {
             while (dc_n = ZTPathNode(dc_it.Next())) {
                 if (dc_n.nodeType != ZTPathNode.NT_USE) continue;
                 dc_useCount++;
-                if (dc_oldest == null && dc_n != currNode) dc_oldest = dc_n;
+                if (dc_oldest != null) continue;
+
+                bool dc_held = false;
+                for (int i = 0; i < dc_heldNodes.Size(); i++) {
+                    if (dc_heldNodes[i] == dc_n) { dc_held = true; break; }
+                }
+                if (!dc_held) dc_oldest = dc_n;
             }
             if (dc_useCount >= 200 && dc_oldest != null) {
                 dc_oldest.Destroy();
