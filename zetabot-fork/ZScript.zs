@@ -2948,8 +2948,8 @@ class ZTBotController : Actor {
         enemy = null;
     }
 
-    void Subroutine_Wander() {
-        ForgetEnemies();        
+    virtual void Subroutine_Wander() {
+        ForgetEnemies();
         PickCommander();
 
         if (bstate != BS_FOLLOWING && ShouldFollow(commander)) {
