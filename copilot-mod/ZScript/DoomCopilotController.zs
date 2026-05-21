@@ -377,7 +377,16 @@ class DoomCopilotController : ZTBotController
             && level.time >= followFailUntilTic)
             followFailUntilTic = level.time + 35;
 
-        if (s != bstate && DC_DebugHandler.DebugLevel() >= 1 && possessed)
+        // state_change gated at debug>=2 — under sustained combat with
+        // 3 bots, transitions fire ~3.6/sec total and each printf is
+        // measurable overhead. 2026-05-20 telemetry pass
+        // (CHAT-CC-260520-920, session_20260520_235536.log) showed
+        // gameplay falling to ~16% real-speed under debug>=1 with this
+        // event enabled. Bumped to debug>=2 so the trace is available
+        // when explicitly investigating state-machine behavior but off
+        // by default. direct_walk + bot_spawn + bot_hurt remain at
+        // >=1 (low-frequency, high-signal).
+        if (s != bstate && DC_DebugHandler.DebugLevel() >= 2 && possessed)
         {
             string enemyName = "none";
             double enemyDist = -1;
