@@ -48,6 +48,11 @@ class DoomCopilotController : ZTBotController
     // and break the thrash loop.
     int followFailUntilTic;
 
+    // Rate-limit for the [DC]direct_walk telemetry event in the
+    // Subroutine_Wander override below. One log per second per bot is
+    // enough to see when the fallback engages without spamming.
+    int lastDirectWalkLogTic;
+
     // ── Follow behavior ────────────────────────────────────────
 
     // Start following if distance to commander exceeds this.
@@ -176,6 +181,58 @@ class DoomCopilotController : ZTBotController
         {
             ConsiderSetBotState(BS_WANDERING);
         }
+    }
+
+    // Direct-walk-to-commander fallback when the soft-lock breaker has
+    // pinned us in WANDERING. The flow that creates this trap:
+    //   1. Subroutine_Follow's PathMoveTo(commander) fails — no NT_USE
+    //      / mapper nav graph connects our position to commander's area.
+    //   2. F→W transition; SetBotState above stamps a 35-tic cooldown.
+    //   3. Vanilla Subroutine_Wander tries to re-enter FOLLOWING via
+    //      ShouldFollow; cooldown blocks the W→F.
+    //   4. Vanilla falls through to SmartMove between local nav nodes —
+    //      which don't reach commander. Bot drifts; never catches up.
+    //
+    // Signature in the 2026-05-20 playtest (session_20260520_233628.log,
+    // CHAT-CC-260520-920): 51 player kills vs 6 squad kills across two
+    // maps; zero squad kills in MAP02; squad stuck near MAP01 spawn
+    // while Pilot moved 2500+ units. Same trap class as CODE-CC-260518-019
+    // but on the OTHER side — that fix prevented thrash *into* FOLLOWING;
+    // this one ensures progress *during* the cooldown.
+    //
+    // Approach: while the follow-cooldown is active AND commander exists
+    // AND distance > FollowMin(), aim toward commander and MoveForward.
+    // No CheckSight gate — even pressing into a wall calls DodgeAndUse,
+    // which plops NT_USE nodes along the path. Once the auto-plopped
+    // network reaches commander's area, PathMoveTo succeeds and the
+    // cooldown stops re-stamping. Self-healing.
+    //
+    // Telemetry: emits [DC]direct_walk at dc_debug>=1, rate-limited to
+    // once per second per bot. Watch this event to see whether the
+    // fallback engages briefly (graph rebuilds, bot recovers) or
+    // continuously (some other obstacle).
+    override void Subroutine_Wander()
+    {
+        if (level.time < followFailUntilTic
+            && commander != null
+            && possessed != null
+            && possessed.Distance3D(commander) > FollowMin())
+        {
+            if (DC_DebugHandler.DebugLevel() >= 1
+                && level.time - lastDirectWalkLogTic >= 35)
+            {
+                lastDirectWalkLogTic = level.time;
+                console.printf("[DC]{\"t\":\"direct_walk\",\"tic\":%d,"
+                    .."\"persona\":\"%s\",\"dist_cmd\":%.0f,\"hp\":%d}",
+                    level.time, PersonaName(),
+                    possessed.Distance3D(commander), possessed.health);
+            }
+            aimToward(commander, 35);
+            possessed.MoveForward();
+            DodgeAndUse();
+            return;
+        }
+        Super.Subroutine_Wander();
     }
 
     // Persona-aware skill refresh. Multiplies CVar values by persona factors.
