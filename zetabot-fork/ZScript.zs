@@ -1769,7 +1769,7 @@ class ZTBotController : Actor {
     }
     */
 
-    bool BotChat(String kind, double importance) {
+    virtual bool BotChat(String kind, double importance) {
         if (kind == "IDLE" && CVar.FindCVar("zb_noidletalk").GetBool())
             return false;
 
